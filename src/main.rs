@@ -62,19 +62,28 @@ fn add (todos: &mut Todos) -> Result<()>{
     println!("---------------------------------------");
     let mut buffer = String::new();
     stdin().read_line(&mut buffer)?;
-    todos.push(Task { id: todos.len() as u32 + 1, name: buffer.trim().to_string() });
+    let id = todos.last().map_or(1, |task| task.id + 1);
+    todos.push(Task { id: id, name: buffer.trim().to_string() });
     let _ = save(todos)?;
     println!("added {}", todos[todos.len() - 1].name);
     Ok(())
 }
 
-fn command(todos: &mut Todos) -> Result<()>{
+fn del (todos: &mut Todos) -> Result<()>{
     println!("---------------------------------------");
-    println!("enter command: 1) show, 2) add, 3) done");
+    println!("enter id({}):", todos.len());
     println!("---------------------------------------");
     let mut buffer = String::new();
     stdin().read_line(&mut buffer)?;
-    match buffer.as_str().trim() {
+    let id = buffer.trim().parse::<u32>().map_err(|e| Error::new(io::ErrorKind::InvalidData, e.to_string()))?;
+    todos.retain(|v| v.id != id);
+    let _ = save(todos)?;
+    println!("{} deleted",id);
+    Ok(())
+}
+
+fn exec(todos: &mut Todos, cmd : &str) -> Result<()>{
+    match cmd {
 	"1" | "show" | "s" => {
 	    show(todos);
 	    return command(todos)
@@ -83,15 +92,29 @@ fn command(todos: &mut Todos) -> Result<()>{
 	    let _ = add(todos);
 	    return command(todos)
 	}
-	"3" | "done" | "d" => {
+	"3" | "del" | "d" => {
+	    let _ = del(todos);
+	    return command(todos)
+	}
+	"4" | "exit" | "e" => {
 	    println!("bye!");
 	}
 	_ => {
-	    println!("command not found...{}", buffer.trim());
+	    println!("command not found...{}", cmd);
 	    return command(todos)
 	}
     }
     Ok(())
+}
+
+fn command(todos: &mut Todos) -> Result<()>{
+    println!("---------------------------------------");
+    println!("enter command: 1) show, 2) add, 3) del, 4) exit");
+    println!("---------------------------------------");
+    let mut buffer = String::new();
+    stdin().read_line(&mut buffer)?;
+    let cmd = buffer.as_str().trim();
+    exec(todos, cmd)
 }
 
 fn main() -> Result<()> {
