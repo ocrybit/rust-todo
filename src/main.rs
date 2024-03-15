@@ -82,43 +82,50 @@ fn del (todos: &mut Todos) -> Result<()>{
     Ok(())
 }
 
-fn exec(todos: &mut Todos, cmd : &str) -> Result<()>{
+fn exec(todos: &mut Todos, cmd : &str, prev: &mut String) -> Result<()>{
     match cmd {
 	"1" | "show" | "s" => {
 	    show(todos);
-	    return command(todos)
+	    *prev = cmd.to_string();
+	    return command(todos, prev)
 	}
 	"2" | "add" | "a" => {
 	    let _ = add(todos);
-	    return command(todos)
+	    *prev = cmd.to_string();
+	    return command(todos, prev)
 	}
 	"3" | "del" | "d" => {
 	    let _ = del(todos);
-	    return command(todos)
+	    *prev = cmd.to_string();
+	    return command(todos, prev)
 	}
 	"4" | "exit" | "e" => {
 	    println!("bye!");
 	}
+	"0" | "" => {
+	    return exec(todos, &prev.clone(), prev);
+	}
 	_ => {
-	    println!("command not found...{}", cmd);
-	    return command(todos)
+	    println!("command not found...{}, {}", cmd, prev);
+	    return command(todos, prev)
 	}
     }
     Ok(())
 }
 
-fn command(todos: &mut Todos) -> Result<()>{
+fn command(todos: &mut Todos, prev: &mut String) -> Result<()>{
     println!("---------------------------------------");
     println!("enter command: 1) show, 2) add, 3) del, 4) exit");
     println!("---------------------------------------");
     let mut buffer = String::new();
     stdin().read_line(&mut buffer)?;
     let cmd = buffer.as_str().trim();
-    exec(todos, cmd)
+    exec(todos, cmd, prev)
 }
 
 fn main() -> Result<()> {
     create_dir()?;
     let mut todos = load().unwrap_or_else(|_| vec![]);
-    command(&mut todos)
+    let mut prev = "1".to_string();
+    command(&mut todos, &mut prev)
 }
