@@ -103,7 +103,7 @@ fn complete (todos: &mut Todos) -> Result<()>{
     let id = buffer.trim().parse::<u32>().map_err(|e| Error::new(io::ErrorKind::InvalidData, e.to_string()))?;
     for task in todos.iter_mut(){
 	if task.id == id {
-	    task.done = true;
+	    task.done = !task.done;
 	    break
 	}
     }
