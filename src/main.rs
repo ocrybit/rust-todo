@@ -1,6 +1,6 @@
 use std::io::{self, stdin, Result, BufRead, BufReader};
 use std::path::Path;
-use std::fs::File;
+use std::fs::{self, File};
 use std::io::prelude::*;
 use std::io::Error;
 
@@ -11,13 +11,19 @@ struct Task {
 
 type Todos = Vec<Task>;
 
-fn toString(todos: & Vec<Task>) -> String {
+fn create_dir() -> Result<()> {
+    let path = Path::new(".todos");
+    fs::create_dir_all(path)?;
+    Ok(())
+}
+
+fn to_str(todos: & Todos) -> String {
     todos.iter()
 	.map(|task| format!("[{}] {}", task.id, task.name))
 	.collect::<Vec<String>>().join("\n")
 }
 
-fn save(todos: & Vec<Task>) -> Result<()>{
+fn save(todos: & Todos) -> Result<()>{
     let path = Path::new(".todos/todos.txt");
     println!("{}",path.display());
     let mut file = File::create(&path)?;
@@ -27,12 +33,12 @@ fn save(todos: & Vec<Task>) -> Result<()>{
     file.write_all(todos_str.as_bytes())
 }
 
-fn load() -> Result<Vec<Task>>{
+fn load() -> Result<Todos>{
     let path = Path::new(".todos/todos.txt");
     let file = File::open(&path)?;
     let buf_reader = BufReader::new(file);
     let mut tasks = Vec::new();
-    for  line in buf_reader.lines() {
+    for line in buf_reader.lines() {
 	let line = line?;
 	let parts: Vec<&str> = line.split(",").collect();
 	let id = parts[0].parse::<u32>().map_err(|e| Error::new(io::ErrorKind::InvalidData, e.to_string()))?;
@@ -44,13 +50,13 @@ fn load() -> Result<Vec<Task>>{
     Ok(tasks)
 }
 
-fn show (todos: &mut Vec<Task>){
+fn show (todos: &mut Todos){
     println!("---------------------------------------");
-    println!("{}", toString(todos));
+    println!("{}", to_str(todos));
     println!("---------------------------------------");
 }
 
-fn add (todos: &mut Vec<Task>) -> Result<()>{
+fn add (todos: &mut Todos) -> Result<()>{
     println!("---------------------------------------");
     println!("enter task({}):", todos.len());
     println!("---------------------------------------");
@@ -62,22 +68,22 @@ fn add (todos: &mut Vec<Task>) -> Result<()>{
     Ok(())
 }
 
-fn command(todos: &mut Vec<Task>) -> Result<()>{
+fn command(todos: &mut Todos) -> Result<()>{
     println!("---------------------------------------");
     println!("enter command: 1) show, 2) add, 3) done");
     println!("---------------------------------------");
     let mut buffer = String::new();
     stdin().read_line(&mut buffer)?;
     match buffer.as_str().trim() {
-	"1" | "show" => {
+	"1" | "show" | "s" => {
 	    show(todos);
 	    return command(todos)
 	}
-	"2" | "add" => {
+	"2" | "add" | "a" => {
 	    let _ = add(todos);
 	    return command(todos)
 	}
-	"3" | "done" => {
+	"3" | "done" | "d" => {
 	    println!("bye!");
 	}
 	_ => {
@@ -89,6 +95,7 @@ fn command(todos: &mut Vec<Task>) -> Result<()>{
 }
 
 fn main() -> Result<()> {
+    create_dir()?;
     let mut todos = load().unwrap_or_else(|_| vec![]);
     command(&mut todos)
 }
