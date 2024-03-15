@@ -9,6 +9,14 @@ struct Task {
     name: String,
 }
 
+type Todos = Vec<Task>;
+
+fn toString(todos: & Vec<Task>) -> String {
+    todos.iter()
+	.map(|task| format!("[{}] {}", task.id, task.name))
+	.collect::<Vec<String>>().join("\n")
+}
+
 fn save(todos: & Vec<Task>) -> Result<()>{
     let path = Path::new(".todos/todos.txt");
     println!("{}",path.display());
@@ -36,8 +44,16 @@ fn load() -> Result<Vec<Task>>{
     Ok(tasks)
 }
 
+fn show (todos: &mut Vec<Task>){
+    println!("---------------------------------------");
+    println!("{}", toString(todos));
+    println!("---------------------------------------");
+}
+
 fn add (todos: &mut Vec<Task>) -> Result<()>{
+    println!("---------------------------------------");
     println!("enter task({}):", todos.len());
+    println!("---------------------------------------");
     let mut buffer = String::new();
     stdin().read_line(&mut buffer)?;
     todos.push(Task { id: todos.len() as u32 + 1, name: buffer.trim().to_string() });
@@ -47,16 +63,21 @@ fn add (todos: &mut Vec<Task>) -> Result<()>{
 }
 
 fn command(todos: &mut Vec<Task>) -> Result<()>{
-    println!("enter command: 1) add, 2) done");
+    println!("---------------------------------------");
+    println!("enter command: 1) show, 2) add, 3) done");
+    println!("---------------------------------------");
     let mut buffer = String::new();
     stdin().read_line(&mut buffer)?;
     match buffer.as_str().trim() {
-	"1" | "add" => {
-	    let res = add(todos);
-	    println!("{:?}", res);
+	"1" | "show" => {
+	    show(todos);
 	    return command(todos)
 	}
-	"2" | "done" => {
+	"2" | "add" => {
+	    let _ = add(todos);
+	    return command(todos)
+	}
+	"3" | "done" => {
 	    println!("bye!");
 	}
 	_ => {
