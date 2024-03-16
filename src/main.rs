@@ -1,7 +1,6 @@
 use std::fs::{self, File};
 use std::io::prelude::*;
-use std::io::Error;
-use std::io::{self, stdin, BufRead, BufReader, Result};
+use std::io::{self, stdout, stdin, BufRead, BufReader, Result, ErrorKind, Error};
 use std::path::Path;
 use chrono::prelude::*;
 
@@ -29,15 +28,15 @@ impl List {
             let parts: Vec<&str> = line.split(",").collect();
             let id = parts[0]
 		.parse::<u32>()
-		.map_err(|e| Error::new(io::ErrorKind::InvalidData, e.to_string()))?;
+		.map_err(|e| Error::new(ErrorKind::InvalidData, e.to_string()))?;
             let done = parts[2]
 		.parse::<bool>()
-		.map_err(|e| Error::new(io::ErrorKind::InvalidData, e.to_string()))?;
+		.map_err(|e| Error::new(ErrorKind::InvalidData, e.to_string()))?;
 	    let mut done_at = 0i64;
 	    if parts.len() > 3 {
 		done_at = parts[3]
 		.parse::<i64>()
-		.map_err(|e| Error::new(io::ErrorKind::InvalidData, e.to_string()))?;
+		.map_err(|e| Error::new(ErrorKind::InvalidData, e.to_string()))?;
 
 	    }
             tasks.push(Task {
@@ -54,7 +53,6 @@ impl List {
     }
     fn save(&self) -> Result<()> {
 	let path = Path::new(self.path.as_str());
-	println!("{}", path.display());
 	let mut file = File::create(&path)?;
 	let todos_str = self.todos.iter()
             .map(|task| format!("{},{},{},{}", task.id, task.name, task.done, task.done_at))
@@ -64,8 +62,8 @@ impl List {
     }
     fn del(&mut self) -> Result<()> {
 	println!("---------------------------------------");
-	println!("enter id:");
-	println!("---------------------------------------");
+	print!("enter id: ");
+	io::stdout().flush().unwrap();
 	let mut buffer = String::new();
 	stdin().read_line(&mut buffer)?;
 	if buffer.trim().to_string() == "" {
@@ -74,10 +72,11 @@ impl List {
             let id = buffer
 		.trim()
 		.parse::<u32>()
-		.map_err(|e| Error::new(io::ErrorKind::InvalidData, e.to_string()))?;
+		.map_err(|e| Error::new(ErrorKind::InvalidData, e.to_string()))?;
             self.todos.retain(|v| v.id != id);
             let _ = self.save()?;
             println!("{} deleted", id);
+	    self.show();
 	}
 	Ok(())
     }
@@ -87,8 +86,8 @@ impl List {
     }
     fn add(&mut self) -> Result<()> {
 	println!("---------------------------------------");
-	println!("enter task ({}):", self.todos.len());
-	println!("---------------------------------------");
+	print!("enter task: ");
+	stdout().flush().unwrap();
 	let mut buffer = String::new();
 	stdin().read_line(&mut buffer)?;
 	let id = self.todos.last().map_or(1, |task| task.id + 1);
@@ -103,13 +102,14 @@ impl List {
             });
             let _ = self.save()?;
             println!("added {}", self.todos[self.todos.len() - 1].name);
+	    self.show();
 	}
 	Ok(())
     }
     fn complete(&mut self) -> Result<()> {
 	println!("---------------------------------------");
-	println!("enter id:");
-	println!("---------------------------------------");
+	print!("enter id: ");
+	stdout().flush().unwrap();
 	let mut buffer = String::new();
 	stdin().read_line(&mut buffer)?;
 	if buffer.trim().to_string() == "" {
@@ -118,7 +118,7 @@ impl List {
             let id = buffer
 		.trim()
 		.parse::<u32>()
-		.map_err(|e| Error::new(io::ErrorKind::InvalidData, e.to_string()))?;
+		.map_err(|e| Error::new(ErrorKind::InvalidData, e.to_string()))?;
 	    println!("here");
             for task in self.todos.iter_mut() {
 		if task.id == id {
@@ -134,13 +134,14 @@ impl List {
 	    println!("here");
             let _ = self.save()?;
             println!("{} completed", id);
+	    self.show();
 	}
 	Ok(())
     }
     fn reorder(&mut self) -> Result<()> {
 	println!("---------------------------------------");
-	println!("enter id  index:");
-	println!("---------------------------------------");
+	print!("enter id index: ");
+	stdout().flush().unwrap();
 	let mut buffer = String::new();
 	stdin().read_line(&mut buffer)?;
 	if buffer.trim().to_string() == "" {
@@ -149,7 +150,7 @@ impl List {
 	    let parts: Vec<&str> = buffer.trim().split_whitespace().collect();
             let id = parts[0]
 		.parse::<u32>()
-		.map_err(|e| Error::new(io::ErrorKind::InvalidData, e.to_string()))?;
+		.map_err(|e| Error::new(ErrorKind::InvalidData, e.to_string()))?;
 	    let mut index: usize = 0;
 	    for (ind, task) in self.todos.iter().enumerate() {
 		if task.id == id {
@@ -159,8 +160,8 @@ impl List {
             }
 	    let mut dest = parts[1]
 		.parse::<usize>()
-		.map_err(|e| Error::new(io::ErrorKind::InvalidData, e.to_string()))?;
-	    if index > dest {
+		.map_err(|e| Error::new(ErrorKind::InvalidData, e.to_string()))?;
+	    if index < dest {
 		dest += 1;
 	    }
 	    
@@ -168,6 +169,7 @@ impl List {
 	    self.todos.insert(dest, task);
             let _ = self.save()?;
             println!("{} -> {} reorderd ", id, dest);
+	    self.show();
 	}
 	Ok(())
     }
@@ -175,6 +177,7 @@ impl List {
 	self.todos.retain(|v| v.done == false);
 	let _ = self.save()?;
 	println!("archive cleared");
+	self.show();
 	Ok(())
     }
 
@@ -210,7 +213,7 @@ fn to_str(todos: &Vec<Task>) -> String {
 		     let datetime: DateTime<Utc> = Utc.timestamp_opt(ts, 0).unwrap();
 		     let ts2 = datetime.format("%m/%d %H:%M").to_string();
                      format!(
-			 "[{}] {} {}",
+			 "[{}] {} ({})",
 			 task.id,
 			 task.name,
 			 ts2
@@ -270,8 +273,8 @@ fn exec(list: &mut List, cmd: &str, prev: &mut String) -> Result<()> {
 
 fn command(list: &mut List, prev: &mut String) -> Result<()> {
     println!("---------------------------------------");
-    println!("enter command: show, add, complete, trash, reorder, del, exit");
-    println!("---------------------------------------");
+    print!("enter command: ");
+    stdout().flush().unwrap();
     let mut buffer = String::new();
     stdin().read_line(&mut buffer)?;
     let cmd = buffer.as_str().trim();
@@ -282,7 +285,7 @@ fn main() -> Result<()> {
     create_dir()?;
     let mut list = List::new(".todos/todos.txt".to_string())?;
     let mut prev = "1".to_string();
-    let _ = exec(&mut list, "s", &mut prev);
+    list.show();
     command(&mut list, &mut prev)
 }
 
