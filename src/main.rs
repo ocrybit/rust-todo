@@ -84,6 +84,11 @@ impl List {
 	println!("---------------------------------------");
 	println!("{}", to_str(&self.todos));
     }
+    fn help(&self) {
+	println!("---------------------------------------");
+	println!("commands: add | del | complete | reorder | trash | help | exit");
+    }
+
     fn add(&mut self) -> Result<()> {
 	println!("---------------------------------------");
 	print!("enter task: ");
@@ -162,9 +167,8 @@ impl List {
 		.parse::<usize>()
 		.map_err(|e| Error::new(ErrorKind::InvalidData, e.to_string()))?;
 	    if index < dest {
-		dest += 1;
+		dest -= 1;
 	    }
-	    
             let task = self.todos.remove(index);
 	    self.todos.insert(dest, task);
             let _ = self.save()?;
@@ -229,6 +233,11 @@ fn exec(list: &mut List, cmd: &str, prev: &mut String) -> Result<()> {
     match cmd {
         "show" | "s" => {
             list.show();
+            *prev = cmd.to_string();
+            return command(list, prev);
+        }
+        "help" | "h" => {
+            list.help();
             *prev = cmd.to_string();
             return command(list, prev);
         }
