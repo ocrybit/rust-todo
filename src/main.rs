@@ -4,7 +4,7 @@ use std::io::{self, stdout, stdin, BufRead, BufReader, Result, ErrorKind, Error}
 use std::path::Path;
 use chrono::prelude::*;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 struct Task {
     id: u32,
     name: String,
@@ -35,8 +35,8 @@ impl List {
 	    let mut done_at = 0i64;
 	    if parts.len() > 3 {
 		done_at = parts[3]
-		.parse::<i64>()
-		.map_err(|e| Error::new(ErrorKind::InvalidData, e.to_string()))?;
+		    .parse::<i64>()
+		    .map_err(|e| Error::new(ErrorKind::InvalidData, e.to_string()))?;
 
 	    }
             tasks.push(Task {
@@ -51,6 +51,7 @@ impl List {
 	    path: pth
 	})
     }
+    
     fn save(&self) -> Result<()> {
 	let path = Path::new(self.path.as_str());
 	let mut file = File::create(&path)?;
@@ -60,6 +61,7 @@ impl List {
             .join("\n");
 	file.write_all(todos_str.as_bytes())
     }
+    
     fn del(&mut self) -> Result<()> {
 	println!("---------------------------------------");
 	print!("enter id: ");
@@ -80,10 +82,12 @@ impl List {
 	}
 	Ok(())
     }
+    
     fn show(&self) {
 	println!("---------------------------------------");
 	println!("{}", to_str(&self.todos));
     }
+    
     fn help(&self) {
 	println!("---------------------------------------");
 	println!("commands: add | del | complete | reorder | trash | help | exit");
@@ -111,6 +115,7 @@ impl List {
 	}
 	Ok(())
     }
+    
     fn complete(&mut self) -> Result<()> {
 	println!("---------------------------------------");
 	print!("enter id: ");
@@ -124,7 +129,6 @@ impl List {
 		.trim()
 		.parse::<u32>()
 		.map_err(|e| Error::new(ErrorKind::InvalidData, e.to_string()))?;
-	    println!("here");
             for task in self.todos.iter_mut() {
 		if task.id == id {
                     task.done = !task.done;
@@ -136,13 +140,13 @@ impl List {
                     break;
 		}
             }
-	    println!("here");
             let _ = self.save()?;
             println!("{} completed", id);
 	    self.show();
 	}
 	Ok(())
     }
+    
     fn reorder(&mut self) -> Result<()> {
 	println!("---------------------------------------");
 	print!("enter id index: ");
@@ -157,18 +161,40 @@ impl List {
 		.parse::<u32>()
 		.map_err(|e| Error::new(ErrorKind::InvalidData, e.to_string()))?;
 	    let mut index: usize = 0;
+	    let mut is_done = false;
 	    for (ind, task) in self.todos.iter().enumerate() {
 		if task.id == id {
 		    index = ind;
-                    break;
+		    is_done = task.done;
 		}
             }
-	    let mut dest = parts[1]
-		.parse::<usize>()
-		.map_err(|e| Error::new(ErrorKind::InvalidData, e.to_string()))?;
-	    if index < dest {
-		dest -= 1;
+	    let mut dest = 0;
+	    if parts.len() > 1 {
+		dest = parts[1]
+		    .parse::<usize>()
+		    .map_err(|e| Error::new(ErrorKind::InvalidData, e.to_string()))?;
 	    }
+	    let mut dest = 0;
+	    let mut done_count = 0usize;
+	    let mut undone_count = 0usize;
+	    for (ind, task) in self.todos.iter().enumerate() {
+		if is_done == true {
+		    if task.done == true && done_count == dest {
+			dest = ind;
+			break;
+		    }
+		}else{
+		    if task.done == false && undone_count == dest {
+			dest = ind;
+			break;
+		    }
+		}
+		if task.done == true {
+		    done_count += 1;
+		} else {
+		    undone_count += 1;
+		}
+            }
             let task = self.todos.remove(index);
 	    self.todos.insert(dest, task);
             let _ = self.save()?;
@@ -177,6 +203,7 @@ impl List {
 	}
 	Ok(())
     }
+    
     fn trash(&mut self) -> Result<()> {
 	self.todos.retain(|v| v.done == false);
 	let _ = self.save()?;
@@ -184,7 +211,6 @@ impl List {
 	self.show();
 	Ok(())
     }
-
     
 }
 
@@ -227,6 +253,21 @@ fn to_str(todos: &Vec<Task>) -> String {
 		 .join("\n"));
     }
     str
+}
+
+fn to_str_all(todos: &Vec<Task>) -> String {
+    todos
+        .iter()
+        .map(|task| {
+            format!(
+                "[{}] {} {}",
+                task.id,
+                task.name,
+                if task.done == false { "" } else { "(o)" }
+            )
+        })
+        .collect::<Vec<String>>()
+        .join("\n")
 }
 
 fn exec(list: &mut List, cmd: &str, prev: &mut String) -> Result<()> {
