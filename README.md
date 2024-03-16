@@ -3,7 +3,7 @@
 ## Compile and Run 
 
 ```bash
-rustc -o target src/main.rs && ./target
+cargo make run
 ```
 
 ## Commands

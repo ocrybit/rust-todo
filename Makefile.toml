@@ -1,0 +1,4 @@
+[tasks.run]
+script = [
+  " rustc -o target src/main.rs && ./target"
+]
