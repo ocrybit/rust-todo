@@ -14,7 +14,8 @@ struct Task {
 
 struct List {
     todos: Vec<Task>,
-    path: String
+    path: String,
+    next_id: u32
 }
 
 impl List {
@@ -23,12 +24,14 @@ impl List {
 	let file = File::open(&path)?;
 	let buf_reader = BufReader::new(file);
 	let mut tasks = Vec::new();
+	let mut next_id = 0u32;
 	for line in buf_reader.lines() {
             let line = line?;
             let parts: Vec<&str> = line.split(",").collect();
             let id = parts[0]
 		.parse::<u32>()
 		.map_err(|e| Error::new(ErrorKind::InvalidData, e.to_string()))?;
+	    if id > next_id { next_id = id };
             let done = parts[2]
 		.parse::<bool>()
 		.map_err(|e| Error::new(ErrorKind::InvalidData, e.to_string()))?;
@@ -48,7 +51,8 @@ impl List {
 	}	
 	Ok(List {
 	    todos: tasks,
-	    path: pth
+	    path: pth,
+	    next_id: next_id + 1
 	})
     }
     
@@ -99,7 +103,8 @@ impl List {
 	stdout().flush().unwrap();
 	let mut buffer = String::new();
 	stdin().read_line(&mut buffer)?;
-	let id = self.todos.last().map_or(1, |task| task.id + 1);
+	let id = self.next_id;
+	self.next_id += 1;
 	if buffer.trim().to_string() == "" {
             println!("cancel");
 	} else {
