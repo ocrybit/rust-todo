@@ -20,52 +20,8 @@ pub struct List {
 
 impl List {
     pub fn new(pth: String) -> Result<List> {
-	let path = Path::new(pth.as_str());
-	let file = File::open(&path)?;
-	let buf_reader = BufReader::new(file);
-	let mut tasks = Vec::new();
-	let mut next_id = 0u32;
-	for line in buf_reader.lines() {
-            let line = line?;
-            let parts: Vec<&str> = line.split(",").collect();
-            let id = parts[0]
-		.parse::<u32>()
-		.map_err(|e| Error::new(ErrorKind::InvalidData, e.to_string()))?;
-	    if id > next_id { next_id = id };
-            let done = parts[2]
-		.parse::<bool>()
-		.map_err(|e| Error::new(ErrorKind::InvalidData, e.to_string()))?;
-	    let mut done_at = 0i64;
-	    if parts.len() > 3 {
-		done_at = parts[3]
-		    .parse::<i64>()
-		    .map_err(|e| Error::new(ErrorKind::InvalidData, e.to_string()))?;
-
-	    }
-            tasks.push(Task {
-		id: id,
-		name: parts[1].to_string(),
-		done: done,
-		done_at: done_at
-            });
-	}	
-	Ok(List {
-	    todos: tasks,
-	    path: pth,
-	    next_id: next_id + 1
-	})
+	List::load(pth)
     }
-    
-    pub fn save(&self) -> Result<()> {
-	let path = Path::new(self.path.as_str());
-	let mut file = File::create(&path)?;
-	let todos_str = self.todos.iter()
-            .map(|task| format!("{},{},{},{}", task.id, task.name, task.done, task.done_at))
-            .collect::<Vec<String>>()
-            .join("\n");
-	file.write_all(todos_str.as_bytes())
-    }
-    
     pub fn del(&mut self) -> Result<()> {
 	println!("---------------------------------------");
 	print!("enter id: ");
@@ -251,4 +207,57 @@ impl List {
 	Ok(())
     }
     
+}
+
+trait Storage {
+    fn save(&self) -> Result<()>;
+    fn load(pth: String) -> Result<List>;
+}
+
+impl Storage for List {
+    fn save(&self) -> Result<()> {
+	let path = Path::new(self.path.as_str());
+	let mut file = File::create(&path)?;
+	let todos_str = self.todos.iter()
+            .map(|task| format!("{},{},{},{}", task.id, task.name, task.done, task.done_at))
+            .collect::<Vec<String>>()
+            .join("\n");
+	file.write_all(todos_str.as_bytes())
+    }
+    fn load(pth: String) -> Result<List> {
+	let path = Path::new(pth.as_str());
+	let file = File::open(&path)?;
+	let buf_reader = BufReader::new(file);
+	let mut tasks = Vec::new();
+	let mut next_id = 0u32;
+	for line in buf_reader.lines() {
+            let line = line?;
+            let parts: Vec<&str> = line.split(",").collect();
+            let id = parts[0]
+		.parse::<u32>()
+		.map_err(|e| Error::new(ErrorKind::InvalidData, e.to_string()))?;
+	    if id > next_id { next_id = id };
+            let done = parts[2]
+		.parse::<bool>()
+		.map_err(|e| Error::new(ErrorKind::InvalidData, e.to_string()))?;
+	    let mut done_at = 0i64;
+	    if parts.len() > 3 {
+		done_at = parts[3]
+		    .parse::<i64>()
+		    .map_err(|e| Error::new(ErrorKind::InvalidData, e.to_string()))?;
+
+	    }
+            tasks.push(Task {
+		id: id,
+		name: parts[1].to_string(),
+		done: done,
+		done_at: done_at
+            });
+	}	
+	Ok(List {
+	    todos: tasks,
+	    path: pth,
+	    next_id: next_id + 1
+	})
+    }
 }

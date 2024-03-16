@@ -72,5 +72,3 @@ fn main() -> Result<()> {
     list.show();
     command(&mut list, &mut prev)
 }
-
-
