@@ -174,7 +174,6 @@ impl List {
 		    .parse::<usize>()
 		    .map_err(|e| Error::new(ErrorKind::InvalidData, e.to_string()))?;
 	    }
-	    let mut dest = 0;
 	    let mut done_count = 0usize;
 	    let mut undone_count = 0usize;
 	    for (ind, task) in self.todos.iter().enumerate() {
@@ -221,7 +220,7 @@ fn create_dir() -> Result<()> {
 }
 
 fn to_str(todos: &Vec<Task>) -> String {
-    let (dones, undones): (Vec<Task>, Vec<Task>) = todos.clone().into_iter().partition(|v| v.done);
+    let (mut dones, undones): (Vec<Task>, Vec<Task>) = todos.clone().into_iter().partition(|v| v.done);
     let mut str: String = undones
         .iter()
         .map(|task| {
@@ -236,6 +235,7 @@ fn to_str(todos: &Vec<Task>) -> String {
         .join("\n");
     if dones.len() > 0 {
         str += "\n==================================[done]\n";
+	dones.sort_by_key(|v| v.done_at);
         str += &(dones
 		 .iter()
 		 .map(|task| {
