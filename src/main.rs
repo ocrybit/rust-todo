@@ -3,12 +3,14 @@ use std::io::prelude::*;
 use std::io::Error;
 use std::io::{self, stdin, BufRead, BufReader, Result};
 use std::path::Path;
+use chrono::prelude::*;
 
 #[derive(Clone)]
 struct Task {
     id: u32,
     name: String,
     done: bool,
+    done_at: i64
 }
 
 struct List {
@@ -18,7 +20,7 @@ struct List {
 
 impl List {
     fn new(pth: String) -> Result<List> {
-	let path = Path::new(".todos/todos.txt");
+	let path = Path::new(pth.as_str());
 	let file = File::open(&path)?;
 	let buf_reader = BufReader::new(file);
 	let mut tasks = Vec::new();
@@ -31,10 +33,18 @@ impl List {
             let done = parts[2]
 		.parse::<bool>()
 		.map_err(|e| Error::new(io::ErrorKind::InvalidData, e.to_string()))?;
+	    let mut done_at = 0i64;
+	    if parts.len() > 3 {
+		done_at = parts[3]
+		.parse::<i64>()
+		.map_err(|e| Error::new(io::ErrorKind::InvalidData, e.to_string()))?;
+
+	    }
             tasks.push(Task {
 		id: id,
 		name: parts[1].to_string(),
 		done: done,
+		done_at: done_at
             });
 	}	
 	Ok(List {
@@ -43,11 +53,11 @@ impl List {
 	})
     }
     fn save(&self) -> Result<()> {
-	let path = Path::new(&self.path);
+	let path = Path::new(self.path.as_str());
 	println!("{}", path.display());
 	let mut file = File::create(&path)?;
 	let todos_str = self.todos.iter()
-            .map(|task| format!("{},{},{}", task.id, task.name, task.done))
+            .map(|task| format!("{},{},{},{}", task.id, task.name, task.done, task.done_at))
             .collect::<Vec<String>>()
             .join("\n");
 	file.write_all(todos_str.as_bytes())
@@ -89,6 +99,7 @@ impl List {
 		id: id,
 		name: buffer.trim().to_string(),
 		done: false,
+		done_at: 0
             });
             let _ = self.save()?;
             println!("added {}", self.todos[self.todos.len() - 1].name);
@@ -108,12 +119,19 @@ impl List {
 		.trim()
 		.parse::<u32>()
 		.map_err(|e| Error::new(io::ErrorKind::InvalidData, e.to_string()))?;
+	    println!("here");
             for task in self.todos.iter_mut() {
 		if task.id == id {
                     task.done = !task.done;
+		    if task.done == false {
+			task.done_at = 0
+		    }else{
+			task.done_at = Utc::now().timestamp_millis();
+		    }
                     break;
 		}
             }
+	    println!("here");
             let _ = self.save()?;
             println!("{} completed", id);
 	}
@@ -188,11 +206,14 @@ fn to_str(todos: &Vec<Task>) -> String {
         str += &(dones
 		 .iter()
 		 .map(|task| {
+		     let ts = task.done_at / 1000;
+		     let datetime: DateTime<Utc> = Utc.timestamp_opt(ts, 0).unwrap();
+		     let ts2 = datetime.format("%m/%d %H:%M").to_string();
                      format!(
 			 "[{}] {} {}",
 			 task.id,
 			 task.name,
-			 if task.done == false { "" } else { "(o)" }
+			 ts2
                      )
 		 })
 		 .collect::<Vec<String>>()
@@ -259,7 +280,7 @@ fn command(list: &mut List, prev: &mut String) -> Result<()> {
 
 fn main() -> Result<()> {
     create_dir()?;
-    let mut list = List::new(".list/todos.txt".to_string())?;
+    let mut list = List::new(".todos/todos.txt".to_string())?;
     let mut prev = "1".to_string();
     let _ = exec(&mut list, "s", &mut prev);
     command(&mut list, &mut prev)
