@@ -1,6 +1,6 @@
 use std::fs::{File};
 use std::io::prelude::*;
-use std::io::{self, stdout, stdin, BufRead, BufReader, Result, ErrorKind, Error};
+use std::io::{self, stdout, stdin, Result, ErrorKind, Error};
 use std::path::Path;
 use crate::libs::storage::{ List, Lists, Storage};
 
@@ -75,30 +75,17 @@ impl Storage<Lists> for Lists {
     fn save(&self) -> Result<()> {
 	let path = Path::new(self.path.as_str());
 	let mut file = File::create(&path)?;
-	let lists_str = self.lists.iter()
-            .map(|list| format!("{},{}", list.id, list.name))
-            .collect::<Vec<String>>()
-            .join("\n");
-	file.write_all(lists_str.as_bytes())
+	let j = serde_json::to_string(&self.lists)?;
+	file.write_all(j.as_bytes())
     }
     fn load(pth: String) -> Result<Lists> {
 	let path = Path::new(pth.as_str());
 	let file = File::open(&path)?;
-	let buf_reader = BufReader::new(file);
-	let mut lists = Vec::new();
+	let lists: Vec<List> = serde_json::from_reader(file)?;
 	let mut next_id = 0u32;
-	for line in buf_reader.lines() {
-            let line = line?;
-            let parts: Vec<&str> = line.split(",").collect();
-            let id = parts[0]
-		.parse::<u32>()
-		.map_err(|e| Error::new(ErrorKind::InvalidData, e.to_string()))?;
-	    if id > next_id { next_id = id };
-            lists.push(List {
-		id: id,
-		name: parts[1].to_string(),
-            });
-	}	
+	for l in lists.iter() {
+	    if l.id > next_id { next_id = l.id };
+	}
 	Ok(Lists {
 	    lists: lists,
 	    path: pth,

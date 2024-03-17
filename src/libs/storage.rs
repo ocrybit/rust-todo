@@ -1,4 +1,5 @@
 use std::io::{ Result };
+use serde::{Deserialize, Serialize};
 
 pub trait Storage<T> {
     fn save(&self) -> Result<()>;
@@ -20,11 +21,13 @@ pub struct Todos {
     pub next_id: u32
 }
 
+#[derive(Serialize, Deserialize)]
 pub struct List {
     pub id: u32,
     pub name: String
 }
 
+#[derive(Serialize, Deserialize)]
 pub struct Lists {
     pub lists: Vec<List>,
     pub path: String,
