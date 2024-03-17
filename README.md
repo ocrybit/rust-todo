@@ -6,6 +6,18 @@
 cargo make run
 ```
 
+## Test
+
+```bash
+cargo test
+```
+
+## Generate Docs
+
+```bash
+cargo doc
+```
+
 ## Commands
 
 - `[empty]` : repeat the previous command
