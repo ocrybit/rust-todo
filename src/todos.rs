@@ -3,6 +3,8 @@ use std::io::prelude::*;
 use std::io::{self, stdout, stdin, BufRead, BufReader, Result, ErrorKind, Error};
 use std::path::Path;
 use chrono::prelude::*;
+mod lib;
+use lib::storage;
 
 #[derive(Clone, Debug)]
 struct Task {
@@ -12,15 +14,15 @@ struct Task {
     done_at: i64
 }
 
-pub struct List {
+pub struct Todos {
     todos: Vec<Task>,
     path: String,
     next_id: u32
 }
 
-impl List {
-    pub fn new(pth: String) -> Result<List> {
-	List::load(pth)
+impl Todos {
+    pub fn new(pth: String) -> Result<Todos> {
+	Todos::load(pth)
     }
     pub fn del(&mut self) -> Result<()> {
 	println!("---------------------------------------");
@@ -209,12 +211,7 @@ impl List {
     
 }
 
-trait Storage {
-    fn save(&self) -> Result<()>;
-    fn load(pth: String) -> Result<List>;
-}
-
-impl Storage for List {
+impl Storage<Todos> for Todos {
     fn save(&self) -> Result<()> {
 	let path = Path::new(self.path.as_str());
 	let mut file = File::create(&path)?;
@@ -224,7 +221,7 @@ impl Storage for List {
             .join("\n");
 	file.write_all(todos_str.as_bytes())
     }
-    fn load(pth: String) -> Result<List> {
+    fn load(pth: String) -> Result<Todos> {
 	let path = Path::new(pth.as_str());
 	let file = File::open(&path)?;
 	let buf_reader = BufReader::new(file);
@@ -254,7 +251,7 @@ impl Storage for List {
 		done_at: done_at
             });
 	}	
-	Ok(List {
+	Ok(Todos {
 	    todos: tasks,
 	    path: pth,
 	    next_id: next_id + 1

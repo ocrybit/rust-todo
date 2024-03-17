@@ -1,74 +1,92 @@
 use std::io::prelude::*;
 use std::io::{ stdout, stdin, Result };
-mod utils;
-mod list;
-use list::{ List };
+mod libs;
+use libs::{ utils, lists, todos };
+use todos::{ Todos };
+use lists:: { Lists };
 
-fn exec(list: &mut List, cmd: &str, prev: &mut String) -> Result<()> {
+fn exec(todos: &mut Todos, cmd: &str, prev: &mut String, lists: &mut Lists) -> Result<()> {
     match cmd {
-        "show" | "s" => {
-            list.show();
+        "list-show" | "ls" => {
+            lists.show();
             *prev = cmd.to_string();
-            return command(list, prev);
+            return command(todos, prev, lists);
+        }
+        "list-add" | "la" => {
+            let _ = lists.add();
+            *prev = cmd.to_string();
+            return command(todos, prev, lists);
+        }
+        "list-del" | "ld" => {
+            let _ = lists.del();
+            *prev = cmd.to_string();
+            return command(todos, prev, lists);
+        }
+        "show" | "s" => {
+            todos.show();
+            *prev = cmd.to_string();
+            return command(todos, prev, lists);
         }
         "help" | "h" => {
-            list.help();
+            todos.help();
             *prev = cmd.to_string();
-            return command(list, prev);
+            return command(todos, prev, lists);
         }
         "add" | "a" => {
-            let _ = list.add();
+            let _ = todos.add();
             *prev = cmd.to_string();
-            return command(list, prev);
+            return command(todos, prev, lists);
         }
         "complete" | "c" => {
-            let _ = list.complete();
+            let _ = todos.complete();
             *prev = cmd.to_string();
-            return command(list, prev);
+            return command(todos, prev, lists);
         }
         "reorder" | "r" => {
-            let _ = list.reorder();
+            let _ = todos.reorder();
             *prev = cmd.to_string();
-            return command(list, prev);
+            return command(todos, prev, lists);
         }
         "trash" | "t" => {
-            let _ = list.trash();
+            let _ = todos.trash();
             *prev = cmd.to_string();
-            return command(list, prev);
+            return command(todos, prev, lists);
         }
         "del" | "d" => {
-            let _ = list.del();
+            let _ = todos.del();
             *prev = cmd.to_string();
-            return command(list, prev);
+            return command(todos, prev, lists);
         }
         "exit" | "e" => {
             println!("bye!");
         }
         "" => {
-            return exec(list, &prev.clone(), prev);
+            return exec(todos, &prev.clone(), prev, lists);
         }
         _ => {
             println!("command not found...{}, {}", cmd, prev);
-            return command(list, prev);
+            return command(todos, prev, lists);
         }
     }
     Ok(())
 }
 
-fn command(list: &mut List, prev: &mut String) -> Result<()> {
+fn command(todos: &mut Todos, prev: &mut String, lists: &mut Lists) -> Result<()> {
     println!("---------------------------------------");
     print!("enter command: ");
     stdout().flush().unwrap();
     let mut buffer = String::new();
     stdin().read_line(&mut buffer)?;
     let cmd = buffer.as_str().trim();
-    exec(list, cmd, prev)
+    exec(todos, cmd, prev, lists)
 }
 
 fn main() -> Result<()> {
     utils::create_dir()?;
-    let mut list = List::new(".todos/todos.txt".to_string())?;
+    let mut todos = Todos::new(".todos/todos.txt".to_string())?;
+    let mut lists = Lists::new(".todos/lists.txt".to_string())?;
     let mut prev = "1".to_string();
-    list.show();
-    command(&mut list, &mut prev)
+    lists.show();
+    todos.show();
+    command(&mut todos, &mut prev, &mut lists)
 }
