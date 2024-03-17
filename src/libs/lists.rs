@@ -71,7 +71,7 @@ impl Lists {
     }
 }
 
-impl Storage<Lists> for Lists {
+impl Storage<Lists> for Lists { 
     fn save(&self) -> Result<()> {
 	let path = Path::new(self.path.as_str());
 	let mut file = File::create(&path)?;
@@ -81,7 +81,7 @@ impl Storage<Lists> for Lists {
     fn load(pth: String) -> Result<Lists> {
 	let path = Path::new(pth.as_str());
 	let file = File::open(&path)?;
-	let lists: Vec<List> = serde_json::from_reader(file)?;
+	let lists: Vec<List> = serde_json::from_reader(file).unwrap_or(vec![]);
 	let mut next_id = 0u32;
 	for l in lists.iter() {
 	    if l.id > next_id { next_id = l.id };
