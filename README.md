@@ -14,6 +14,8 @@ cargo make run
 - `c | complete` : complete a task
 - `r | reorder` : reorder a task
 - `d | del` : delete a task
+- `l | list` : add a task to a list
+- `u | unlist` : remove a task from a list
 - `ls | list-show` : show lists
 - `la | list-add` : add a list
 - `ld | list-del` : delete a list

@@ -6,7 +6,8 @@ use todos::{ Todos };
 use lists:: { Lists };
 
 fn exec(todos: &mut Todos, cmd: &str, prev: &mut String, lists: &mut Lists) -> Result<()> {
-    match cmd {
+    let parts: Vec<&str> = cmd.trim().split_whitespace().collect();
+    match parts[0] {
         "list-show" | "ls" => {
             lists.show();
             *prev = cmd.to_string();
@@ -23,7 +24,11 @@ fn exec(todos: &mut Todos, cmd: &str, prev: &mut String, lists: &mut Lists) -> R
             return command(todos, prev, lists);
         }
         "show" | "s" => {
-            todos.show();
+	    if parts.len() == 1 {
+		todos.show("");
+	    }else{
+		todos.show(parts[1]);
+	    }
             *prev = cmd.to_string();
             return command(todos, prev, lists);
         }
@@ -97,6 +102,6 @@ fn main() -> Result<()> {
     let mut lists = Lists::new(".todos/lists.txt".to_string())?;
     let mut prev = "1".to_string();
     lists.show();
-    todos.show();
+    todos.show("");
     command(&mut todos, &mut prev, &mut lists)
 }

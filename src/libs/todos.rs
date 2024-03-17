@@ -40,12 +40,16 @@ impl Todos {
             self.todos.retain(|v| v.id != id);
             let _ = self.save()?;
             println!("{} deleted", id);
-	    self.show();
+	    self.show("");
 	}
 	Ok(())
     }
-    fn to_str(&self) -> String {
-	let (mut dones, undones): (Vec<Task>, Vec<Task>) = self.todos.clone().into_iter().partition(|v| v.done);
+    fn to_str(&self, tag: &str) -> String {
+	let mut todos2 = self.todos.clone();
+	if tag != "" {
+	    todos2.retain(|v| v.lists.contains(&tag.to_string()));
+	}
+	let (mut dones, undones): (Vec<Task>, Vec<Task>) = todos2.into_iter().partition(|v| v.done);
 	let mut str: String = undones
             .iter()
             .map(|task| {
@@ -82,9 +86,9 @@ impl Todos {
 	str
     }
 
-    pub fn show(&self) {
+    pub fn show(&self, tag: &str) {
 	println!("[tasks]---------------------------------------");
-	println!("{}", self.to_str());
+	println!("{}", self.to_str(tag));
     }
     
     pub fn help(&self) {
@@ -114,7 +118,7 @@ impl Todos {
             });
             let _ = self.save()?;
             println!("added {}", self.todos[self.todos.len() - 1].name);
-	    self.show();
+	    self.show("");
 	}
 	Ok(())
     }
@@ -146,7 +150,7 @@ impl Todos {
             }
             let _ = self.save()?;
             println!("{} completed", id);
-	    self.show();
+	    self.show("");
 	}
 	Ok(())
     }
@@ -173,7 +177,7 @@ impl Todos {
             }
             let _ = self.save()?;
             println!("{} added to list {}", id, tag);
-	    self.show();
+	    self.show("");
 	}
 	Ok(())
     }
@@ -203,15 +207,13 @@ impl Todos {
 			    break;
 			}
 		    }
-		    if exists == true {
-			task.lists.remove(index);
-		    }
+		    if exists == true { task.lists.remove(index); }
                     break;
 		}
             }
             let _ = self.save()?;
             println!("{} removed from list {}", id, tag);
-	    self.show();
+	    self.show("");
 	}
 	Ok(())
     }
@@ -267,7 +269,7 @@ impl Todos {
 	    self.todos.insert(dest, task);
             let _ = self.save()?;
             println!("{} -> {} reorderd ", id, dest);
-	    self.show();
+	    self.show("");
 	}
 	Ok(())
     }
@@ -276,7 +278,7 @@ impl Todos {
 	self.todos.retain(|v| v.done == false);
 	let _ = self.save()?;
 	println!("archive cleared");
-	self.show();
+	self.show("");
 	Ok(())
     }
     
@@ -319,8 +321,9 @@ impl Storage<Todos> for Todos {
 
 	    }
 	    let mut lists : Vec<String> = vec![];
-	    if parts.len() > 4 {
-		let _lists: Vec<&str> = parts[4].split(",").collect();
+	    if parts.len() > 4  && parts[4] != "" {
+		let mut _lists: Vec<&str> = parts[4].split(",").collect();
+		_lists.retain(|v| *v != "");
 		for l in _lists.iter(){
 		    lists.push(l.to_string());
 		}
