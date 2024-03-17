@@ -55,7 +55,7 @@ impl Todos {
                     "[{}] {} {}",
                     task.id,
                     task.name,
-		    if task.lists.len() == 1 && task.lists[0] == "" { "".to_string() } else { lists }
+		    if task.lists.len() == 0 || (task.lists.len() == 1 && task.lists[0] == "") { "".to_string() } else { lists }
 		)
             })
             .collect::<Vec<String>>()
@@ -173,6 +173,44 @@ impl Todos {
             }
             let _ = self.save()?;
             println!("{} added to list {}", id, tag);
+	    self.show();
+	}
+	Ok(())
+    }
+
+    pub fn unlist(&mut self) -> Result<()> {
+	println!("---------------------------------------");
+	print!("enter id list: ");
+	stdout().flush().unwrap();
+	let mut buffer = String::new();
+	stdin().read_line(&mut buffer)?;
+	if buffer.trim().to_string() == "" {
+            println!("cancel");
+	} else {
+	    let parts: Vec<&str> = buffer.trim().split_whitespace().collect();
+            let id = parts[0]
+		.parse::<u32>()
+		.map_err(|e| Error::new(ErrorKind::InvalidData, e.to_string()))?;
+            let tag = parts[1].trim();
+            for task in self.todos.iter_mut() {
+		if task.id == id {
+		    let mut exists = false;
+		    let mut index  = 0;
+		    for (ind, l) in task.lists.iter().enumerate() {
+			if l == tag {
+			    index = ind;
+			    exists = true;
+			    break;
+			}
+		    }
+		    if exists == true {
+			task.lists.remove(index);
+		    }
+                    break;
+		}
+            }
+            let _ = self.save()?;
+            println!("{} removed from list {}", id, tag);
 	    self.show();
 	}
 	Ok(())

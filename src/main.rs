@@ -32,6 +32,11 @@ fn exec(todos: &mut Todos, cmd: &str, prev: &mut String, lists: &mut Lists) -> R
             *prev = cmd.to_string();
             return command(todos, prev, lists);
         }
+        "unlist" | "u" => {
+            let _ = todos.unlist();
+            *prev = cmd.to_string();
+            return command(todos, prev, lists);
+        }
         "help" | "h" => {
             todos.help();
             *prev = cmd.to_string();
