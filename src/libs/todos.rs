@@ -71,7 +71,7 @@ impl Todos {
             });
             let _ = self.save()?;
             println!("added {}", self.todos[self.todos.len() - 1].name);
-	    self.show("");
+	    self.show(if parts.len() > 1 { parts[1] } else { "" });
 	}
 	Ok(())
     }

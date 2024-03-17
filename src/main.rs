@@ -5,7 +5,10 @@ use libs::{ utils };
 use libs::storage::{ Todos, Lists };
 
 fn exec(todos: &mut Todos, cmd: &str, prev: &mut String, lists: &mut Lists) -> Result<()> {
-    let parts: Vec<&str> = cmd.trim().split_whitespace().collect();
+    let mut parts: Vec<&str> = vec![""];
+    if cmd != "" {
+	parts = cmd.trim().split_whitespace().collect();
+    }
     match parts[0] {
         "list-show" | "ls" => {
             lists.show();
