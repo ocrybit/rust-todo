@@ -3,22 +3,8 @@ use std::io::prelude::*;
 use std::io::{self, stdout, stdin, BufRead, BufReader, Result, ErrorKind, Error};
 use std::path::Path;
 use chrono::prelude::*;
-use crate::libs::storage::Storage;
-
-#[derive(Clone, Debug)]
-struct Task {
-    id: u32,
-    name: String,
-    done: bool,
-    done_at: i64,
-    lists: Vec<String>
-}
-
-pub struct Todos {
-    todos: Vec<Task>,
-    path: String,
-    next_id: u32
-}
+use crate::libs::storage::{ Task, Todos, Storage };
+use crate::libs::utils::{ to_str };
 
 impl Todos {
     pub fn new(pth: String) -> Result<Todos> {
@@ -45,45 +31,7 @@ impl Todos {
 	Ok(())
     }
     fn to_str(&self, tag: &str) -> String {
-	let mut todos2 = self.todos.clone();
-	if tag != "" {
-	    todos2.retain(|v| v.lists.contains(&tag.to_string()));
-	}
-	let (mut dones, undones): (Vec<Task>, Vec<Task>) = todos2.into_iter().partition(|v| v.done);
-	let mut str: String = undones
-            .iter()
-            .map(|task| {
-		let mut lists = task.lists.iter().map(|l| format!("{}", l)).collect::<Vec<String>>().join("|");
-		lists = format!("<{}>",lists);
-		format!(
-                    "[{}] {} {}",
-                    task.id,
-                    task.name,
-		    if task.lists.len() == 0 || (task.lists.len() == 1 && task.lists[0] == "") { "".to_string() } else { lists }
-		)
-            })
-            .collect::<Vec<String>>()
-            .join("\n");
-	if dones.len() > 0 {
-            str += "\n==================================[done]\n";
-	    dones.sort_by_key(|v| v.done_at);
-            str += &(dones
-		     .iter()
-		     .map(|task| {
-			 let ts = task.done_at / 1000;
-			 let datetime: DateTime<Utc> = Utc.timestamp_opt(ts, 0).unwrap();
-			 let ts2 = datetime.format("%m/%d %H:%M").to_string();
-			 format!(
-			     "[{}] {} ({})",
-			     task.id,
-			     task.name,
-			     ts2
-			 )
-		     })
-		     .collect::<Vec<String>>()
-		     .join("\n"));
-	}
-	str
+	to_str(self.todos.clone(), tag)
     }
 
     pub fn show(&self, tag: &str) {
@@ -122,7 +70,6 @@ impl Todos {
 	}
 	Ok(())
     }
-
     
     pub fn complete(&mut self) -> Result<()> {
 	println!("---------------------------------------");
@@ -177,7 +124,7 @@ impl Todos {
             }
             let _ = self.save()?;
             println!("{} added to list {}", id, tag);
-	    self.show("");
+	    self.show(tag);
 	}
 	Ok(())
     }
@@ -213,7 +160,7 @@ impl Todos {
             }
             let _ = self.save()?;
             println!("{} removed from list {}", id, tag);
-	    self.show("");
+	    self.show(tag);
 	}
 	Ok(())
     }

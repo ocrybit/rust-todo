@@ -2,18 +2,7 @@ use std::fs::{File};
 use std::io::prelude::*;
 use std::io::{self, stdout, stdin, BufRead, BufReader, Result, ErrorKind, Error};
 use std::path::Path;
-use crate::libs::storage::Storage;
-
-struct List {
-    id: u32,
-    name: String
-}
-
-pub struct Lists {
-    lists: Vec<List>,
-    path: String,
-    next_id: u32
-}
+use crate::libs::storage::{ List, Lists, Storage};
 
 impl Lists {
     pub fn new(pth: String) -> Result<Lists> {

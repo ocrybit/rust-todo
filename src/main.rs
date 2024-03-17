@@ -1,9 +1,8 @@
 use std::io::prelude::*;
 use std::io::{ stdout, stdin, Result };
 mod libs;
-use libs::{ utils, lists, todos };
-use todos::{ Todos };
-use lists:: { Lists };
+use libs::{ utils };
+use libs::storage::{ Todos, Lists };
 
 fn exec(todos: &mut Todos, cmd: &str, prev: &mut String, lists: &mut Lists) -> Result<()> {
     let parts: Vec<&str> = cmd.trim().split_whitespace().collect();
