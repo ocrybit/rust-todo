@@ -52,17 +52,22 @@ impl Todos {
 	stdout().flush().unwrap();
 	let mut buffer = String::new();
 	stdin().read_line(&mut buffer)?;
-	let id = self.next_id;
-	self.next_id += 1;
 	if buffer.trim().to_string() == "" {
             println!("cancel");
 	} else {
+	    let id = self.next_id;
+	    self.next_id += 1;
+	    let mut tags : Vec<String> = vec![];
+	    let parts: Vec<&str> = buffer.trim().split(",").collect();
+	    if parts.len() > 1 {
+		tags.push(parts[1].to_string());
+	    }
             self.todos.push(Task {
 		id: id,
-		name: buffer.trim().to_string(),
+		name: parts[0].trim().to_string(),
 		done: false,
 		done_at: 0,
-		lists: vec![]
+		lists: tags
             });
             let _ = self.save()?;
             println!("added {}", self.todos[self.todos.len() - 1].name);
