@@ -10,7 +10,8 @@ struct Task {
     id: u32,
     name: String,
     done: bool,
-    done_at: i64
+    done_at: i64,
+    lists: Vec<String>
 }
 
 pub struct Todos {
@@ -48,11 +49,13 @@ impl Todos {
 	let mut str: String = undones
             .iter()
             .map(|task| {
+		let mut lists = task.lists.iter().map(|l| format!("{}", l)).collect::<Vec<String>>().join("|");
+		lists = format!("<{}>",lists);
 		format!(
                     "[{}] {} {}",
                     task.id,
                     task.name,
-                    if task.done == false { "" } else { "(o)" }
+		    if task.lists.len() == 1 && task.lists[0] == "" { "".to_string() } else { lists }
 		)
             })
             .collect::<Vec<String>>()
@@ -106,7 +109,8 @@ impl Todos {
 		id: id,
 		name: buffer.trim().to_string(),
 		done: false,
-		done_at: 0
+		done_at: 0,
+		lists: vec![]
             });
             let _ = self.save()?;
             println!("added {}", self.todos[self.todos.len() - 1].name);
@@ -114,6 +118,7 @@ impl Todos {
 	}
 	Ok(())
     }
+
     
     pub fn complete(&mut self) -> Result<()> {
 	println!("---------------------------------------");
@@ -141,6 +146,33 @@ impl Todos {
             }
             let _ = self.save()?;
             println!("{} completed", id);
+	    self.show();
+	}
+	Ok(())
+    }
+
+    pub fn list(&mut self) -> Result<()> {
+	println!("---------------------------------------");
+	print!("enter id list: ");
+	stdout().flush().unwrap();
+	let mut buffer = String::new();
+	stdin().read_line(&mut buffer)?;
+	if buffer.trim().to_string() == "" {
+            println!("cancel");
+	} else {
+	    let parts: Vec<&str> = buffer.trim().split_whitespace().collect();
+            let id = parts[0]
+		.parse::<u32>()
+		.map_err(|e| Error::new(ErrorKind::InvalidData, e.to_string()))?;
+            let tag = parts[1].trim();
+            for task in self.todos.iter_mut() {
+		if task.id == id {
+		    task.lists.push(tag.to_string());
+                    break;
+		}
+            }
+            let _ = self.save()?;
+            println!("{} added to list {}", id, tag);
 	    self.show();
 	}
 	Ok(())
@@ -217,7 +249,10 @@ impl Storage<Todos> for Todos {
 	let path = Path::new(self.path.as_str());
 	let mut file = File::create(&path)?;
 	let todos_str = self.todos.iter()
-            .map(|task| format!("{},{},{},{}", task.id, task.name, task.done, task.done_at))
+            .map(|task| {
+		let lists = task.lists.iter().map(|l| format!("{}", l)).collect::<Vec<String>>().join("|");
+		format!("{},{},{},{},{}", task.id, task.name, task.done, task.done_at, lists)
+	    })
             .collect::<Vec<String>>()
             .join("\n");
 	file.write_all(todos_str.as_bytes())
@@ -245,11 +280,19 @@ impl Storage<Todos> for Todos {
 		    .map_err(|e| Error::new(ErrorKind::InvalidData, e.to_string()))?;
 
 	    }
+	    let mut lists : Vec<String> = vec![];
+	    if parts.len() > 4 {
+		let _lists: Vec<&str> = parts[4].split(",").collect();
+		for l in _lists.iter(){
+		    lists.push(l.to_string());
+		}
+	    }
             tasks.push(Task {
 		id: id,
 		name: parts[1].to_string(),
 		done: done,
-		done_at: done_at
+		done_at: done_at,
+		lists: lists
             });
 	}	
 	Ok(Todos {
