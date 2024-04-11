@@ -1,8 +1,9 @@
 use std::path::Path;
-use std::io::{Result};
 use std::fs::{self};
 use chrono::prelude::*;
 use crate::libs::storage::{ Task };
+use rustyline::error::ReadlineError;
+use rustyline::{DefaultEditor, Result};
 
 pub fn create_dir() -> Result<()> {
     let path = Path::new(".todos");
@@ -49,6 +50,38 @@ pub fn to_str(mut todos: Vec<Task>, tag: &str) -> String {
 		 .join("\n"));
     }
     str
+}
+
+pub fn get_input(txt : &str, empty : &str) -> Result<String> {
+    let mut rl = DefaultEditor::new()?;
+    #[cfg(feature = "with-file-history")]
+    if rl.load_history(".todos/history.txt").is_err() {
+        println!("No previous history.");
+    }
+    let mut str = String::new();
+    loop {
+        let readline = rl.readline(txt);
+        match readline {
+            Ok(line) => {
+                let _ = rl.add_history_entry(line.as_str());
+		str = line;
+		break
+            },
+            Err(ReadlineError::Interrupted) => {
+		str = empty.to_string();
+                break
+            },
+            Err(ReadlineError::Eof) => {
+                break
+            },
+            Err(_) => {
+                break
+            }
+        }
+    }
+    #[cfg(feature = "with-file-history")]
+    let _ = rl.save_history(".todos/history.txt");
+    Ok(str)
 }
 
 #[cfg(test)]

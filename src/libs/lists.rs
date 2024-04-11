@@ -1,8 +1,10 @@
 use std::fs::{File};
 use std::io::prelude::*;
-use std::io::{self, stdout, stdin, Result, ErrorKind, Error};
+use std::io::{Result, ErrorKind, Error};
 use std::path::Path;
 use crate::libs::storage::{ List, Lists, Storage};
+use crate::libs::utils::{  get_input };
+use rustyline::{Result as ResultRL};
 
 impl Lists {
     pub fn new(pth: String) -> Result<Lists> {
@@ -27,12 +29,9 @@ impl Lists {
 	println!("{}", self.to_str());
     }
 
-    pub fn add(&mut self) -> Result<()> {
+    pub fn add(&mut self) -> ResultRL<()> {
 	println!("---------------------------------------");
-	print!("enter list: ");
-	stdout().flush().unwrap();
-	let mut buffer = String::new();
-	stdin().read_line(&mut buffer)?;
+	let buffer = get_input("enter list: ", "")?;
 	let id = self.next_id;
 	self.next_id += 1;
 	if buffer.trim().to_string() == "" {
@@ -49,12 +48,9 @@ impl Lists {
 	Ok(())
     }
     
-    pub fn del(&mut self) -> Result<()> {
+    pub fn del(&mut self) -> ResultRL<()> {
 	println!("---------------------------------------");
-	print!("enter id: ");
-	io::stdout().flush().unwrap();
-	let mut buffer = String::new();
-	stdin().read_line(&mut buffer)?;
+	let buffer = get_input("enter id: ", "")?;
 	if buffer.trim().to_string() == "" {
             println!("cancel");
 	} else {

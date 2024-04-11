@@ -1,21 +1,19 @@
 use std::fs::{File};
 use std::io::prelude::*;
-use std::io::{self, stdout, stdin, BufRead, BufReader, Result, ErrorKind, Error};
+use std::io::{Result, BufRead, BufReader, ErrorKind, Error};
 use std::path::Path;
 use chrono::prelude::*;
 use crate::libs::storage::{ Task, Todos, Storage };
-use crate::libs::utils::{ to_str };
+use crate::libs::utils::{ to_str, get_input };
+use rustyline::{Result as ResultRL};
 
 impl Todos {
     pub fn new(pth: String) -> Result<Todos> {
 	Todos::load(pth)
     }
-    pub fn del(&mut self) -> Result<()> {
+    pub fn del(&mut self) -> ResultRL<()> {
 	println!("---------------------------------------");
-	print!("enter id: ");
-	io::stdout().flush().unwrap();
-	let mut buffer = String::new();
-	stdin().read_line(&mut buffer)?;
+	let buffer = get_input("enter id: ", "")?;
 	if buffer.trim().to_string() == "" {
             println!("cancel");
 	} else {
@@ -46,12 +44,9 @@ impl Todos {
 	println!("[other-commands] help | exit");
     }
 
-    pub fn add(&mut self) -> Result<()> {
+    pub fn add(&mut self) -> ResultRL<()> {
 	println!("---------------------------------------");
-	print!("enter task: ");
-	stdout().flush().unwrap();
-	let mut buffer = String::new();
-	stdin().read_line(&mut buffer)?;
+	let buffer = get_input("enter task: ", "")?;
 	if buffer.trim().to_string() == "" {
             println!("cancel");
 	} else {
@@ -76,12 +71,9 @@ impl Todos {
 	Ok(())
     }
     
-    pub fn complete(&mut self) -> Result<()> {
+    pub fn complete(&mut self) -> ResultRL<()> {
 	println!("---------------------------------------");
-	print!("enter id: ");
-	stdout().flush().unwrap();
-	let mut buffer = String::new();
-	stdin().read_line(&mut buffer)?;
+	let buffer = get_input("enter id: ", "")?;
 	if buffer.trim().to_string() == "" {
             println!("cancel");
 	} else {
@@ -107,12 +99,9 @@ impl Todos {
 	Ok(())
     }
 
-    pub fn list(&mut self) -> Result<()> {
+    pub fn list(&mut self) -> ResultRL<()> {
 	println!("---------------------------------------");
-	print!("enter id list: ");
-	stdout().flush().unwrap();
-	let mut buffer = String::new();
-	stdin().read_line(&mut buffer)?;
+	let buffer = get_input("enter id list: ", "")?;
 	if buffer.trim().to_string() == "" {
             println!("cancel");
 	} else {
@@ -134,12 +123,9 @@ impl Todos {
 	Ok(())
     }
 
-    pub fn unlist(&mut self) -> Result<()> {
+    pub fn unlist(&mut self) -> ResultRL<()> {
 	println!("---------------------------------------");
-	print!("enter id list: ");
-	stdout().flush().unwrap();
-	let mut buffer = String::new();
-	stdin().read_line(&mut buffer)?;
+	let buffer = get_input("enter id list: ", "")?;
 	if buffer.trim().to_string() == "" {
             println!("cancel");
 	} else {
@@ -170,12 +156,9 @@ impl Todos {
 	Ok(())
     }
     
-    pub fn reorder(&mut self) -> Result<()> {
+    pub fn reorder(&mut self) -> ResultRL<()> {
 	println!("---------------------------------------");
-	print!("enter id index: ");
-	stdout().flush().unwrap();
-	let mut buffer = String::new();
-	stdin().read_line(&mut buffer)?;
+	let buffer = get_input("enter id index: ", "")?;
 	if buffer.trim().to_string() == "" {
             println!("cancel");
 	} else {
