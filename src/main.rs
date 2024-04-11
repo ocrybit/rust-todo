@@ -1,8 +1,8 @@
-use std::io::prelude::*;
-use std::io::{ stdout, stdin, Result };
 mod libs;
 use libs::{ utils };
 use libs::storage::{ Todos, Lists };
+use rustyline::error::ReadlineError;
+use rustyline::{DefaultEditor, Result};
 
 fn exec(todos: &mut Todos, cmd: &str, prev: &mut String, lists: &mut Lists) -> Result<()> {
     let mut parts: Vec<&str> = vec![""];
@@ -90,12 +90,9 @@ fn exec(todos: &mut Todos, cmd: &str, prev: &mut String, lists: &mut Lists) -> R
 
 fn command(todos: &mut Todos, prev: &mut String, lists: &mut Lists) -> Result<()> {
     println!("---------------------------------------");
-    print!("enter command: ");
-    stdout().flush().unwrap();
-    let mut buffer = String::new();
-    stdin().read_line(&mut buffer)?;
-    let cmd = buffer.as_str().trim();
-    exec(todos, cmd, prev, lists)
+    let str = get_input("enter command: ", "exit")?;
+    let cmd = str.trim();
+    exec(todos, &cmd, prev, lists)
 }
 
 fn main() -> Result<()> {
@@ -106,4 +103,36 @@ fn main() -> Result<()> {
     lists.show();
     todos.show("");
     command(&mut todos, &mut prev, &mut lists)
+}
+
+fn get_input(txt : &str, empty : &str) -> Result<String> {
+    let mut rl = DefaultEditor::new()?;
+    #[cfg(feature = "with-file-history")]
+    if rl.load_history(".todos/history.txt").is_err() {
+        println!("No previous history.");
+    }
+    let mut str = String::new();
+    loop {
+        let readline = rl.readline(txt);
+        match readline {
+            Ok(line) => {
+                let _ = rl.add_history_entry(line.as_str());
+		str = line;
+		break
+            },
+            Err(ReadlineError::Interrupted) => {
+		str = empty.to_string();
+                break
+            },
+            Err(ReadlineError::Eof) => {
+                break
+            },
+            Err(_) => {
+                break
+            }
+        }
+    }
+    #[cfg(feature = "with-file-history")]
+    let _ = rl.save_history(".todos/history.txt");
+    Ok(str)
 }

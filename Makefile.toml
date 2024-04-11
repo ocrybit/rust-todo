@@ -1,4 +1,4 @@
 [tasks.run]
 script = [
-  " cargo build && target/debug/rust-todo"
+  " cargo build && cargo run --features \"with-file-history\""
 ]
