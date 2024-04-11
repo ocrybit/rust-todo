@@ -5,6 +5,38 @@ use crate::libs::storage::{ Task };
 use rustyline::error::ReadlineError;
 use rustyline::{DefaultEditor, Result};
 
+pub fn get_values<'a>(msg: &'a str, msg2: &'a str, empty: &'a str, _id: &'a str, _id2: &'a str) -> Result<(String, String)> {
+    let mut __id = "";
+    let mut __id2 = "";
+    let buffer: String;
+    if _id == "" && _id2 == "" {
+	buffer = get_input(msg, empty)?;
+	let parts: Vec<&str> = buffer.trim().split_whitespace().collect();
+	__id = parts[0].trim();
+	__id2 = parts[1].trim();
+    } else if _id2 == "" {
+	__id = _id;
+	buffer = get_input(msg2, empty)?;
+	__id2 = buffer.trim();
+    }else{
+	__id = _id;
+	__id2 = _id2;
+    }
+    Ok((__id.to_string(), __id2.to_string()))
+}
+
+pub fn get_value(msg: &str, empty: &str, _id: &str) -> Result<String> {
+    if _id == "" {
+	Ok(get_input(msg, empty)?.trim().to_string())
+    } else {
+	Ok(_id.to_string())
+    }
+}
+
+pub fn bar() {
+    println!("---------------------------------------");
+}
+
 pub fn create_dir() -> Result<()> {
     let path = Path::new(".todos");
     fs::create_dir_all(path)?;
@@ -12,7 +44,9 @@ pub fn create_dir() -> Result<()> {
 }
 
 pub fn to_str(mut todos: Vec<Task>, tag: &str) -> String {
-    if tag != "" {
+    if tag == "_" {
+	todos.retain(|v| v.lists.len() == 0 || v.lists.contains(&("_".to_string())));
+    } else if tag != "" {
 	todos.retain(|v| v.lists.contains(&tag.to_string()));
     }
     let (mut dones, undones): (Vec<Task>, Vec<Task>) = todos.into_iter().partition(|v| v.done);

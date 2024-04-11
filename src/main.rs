@@ -15,12 +15,22 @@ fn exec(todos: &mut Todos, cmd: &str, prev: &mut String, lists: &mut Lists) -> R
             return command(todos, prev, lists);
         }
         "list-add" | "la" => {
-            let _ = lists.add();
+	    if parts.len() == 1 {
+		let _ = lists.add("");
+	    }else{
+		let _ = lists.add(parts[1]);
+	    }
+	    
             *prev = cmd.to_string();
             return command(todos, prev, lists);
         }
         "list-del" | "ld" => {
-            let _ = lists.del();
+	    if parts.len() == 1 {
+		let _ = lists.del("");
+	    }else{
+		let _ = lists.del(parts[1]);
+	    }
+	    
             *prev = cmd.to_string();
             return command(todos, prev, lists);
         }
@@ -34,12 +44,24 @@ fn exec(todos: &mut Todos, cmd: &str, prev: &mut String, lists: &mut Lists) -> R
             return command(todos, prev, lists);
         }
         "list" | "l" => {
-            let _ = todos.list();
+	    if parts.len() == 1 {
+		let _ = todos.list("", "");
+	    }else if parts.len() == 2 {
+		let _ = todos.list(parts[1], "");
+	    } else {
+		let _ = todos.list(parts[1], parts[2]);
+	    }
             *prev = cmd.to_string();
             return command(todos, prev, lists);
         }
         "unlist" | "u" => {
-            let _ = todos.unlist();
+	    if parts.len() == 1 {
+		let _ = todos.unlist("", "");
+	    }else if parts.len() == 2 {
+		let _ = todos.unlist(parts[1], "");
+	    } else {
+		let _ = todos.unlist(parts[1], parts[2]);
+	    }
             *prev = cmd.to_string();
             return command(todos, prev, lists);
         }
@@ -49,17 +71,32 @@ fn exec(todos: &mut Todos, cmd: &str, prev: &mut String, lists: &mut Lists) -> R
             return command(todos, prev, lists);
         }
         "add" | "a" => {
-            let _ = todos.add();
+	    if parts.len() == 1 {
+		let _ = todos.add("");
+	    }else{
+		let _ = todos.add(parts[1]);
+	    }
+	    
             *prev = cmd.to_string();
             return command(todos, prev, lists);
         }
         "complete" | "c" => {
-            let _ = todos.complete();
+	    if parts.len() == 1 {
+		let _ = todos.complete("");
+	    }else{
+		let _ = todos.complete(parts[1]);
+	    }
             *prev = cmd.to_string();
             return command(todos, prev, lists);
         }
-        "reorder" | "r" => {
-            let _ = todos.reorder();
+        "reorder" | "r" => {	
+	    if parts.len() == 1 {
+		let _ = todos.reorder("", "");
+	    }else if parts.len() == 2 {
+		let _ = todos.reorder(parts[1], "");
+	    } else {
+		let _ = todos.reorder(parts[1], parts[2]);
+	    }    
             *prev = cmd.to_string();
             return command(todos, prev, lists);
         }
@@ -69,7 +106,11 @@ fn exec(todos: &mut Todos, cmd: &str, prev: &mut String, lists: &mut Lists) -> R
             return command(todos, prev, lists);
         }
         "del" | "d" => {
-            let _ = todos.del();
+	    if parts.len() == 1 {
+		let _ = todos.del("");
+	    }else{
+		let _ = todos.del(parts[1]);
+	    }
             *prev = cmd.to_string();
             return command(todos, prev, lists);
         }

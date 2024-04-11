@@ -3,7 +3,7 @@ use std::io::prelude::*;
 use std::io::{Result, ErrorKind, Error};
 use std::path::Path;
 use crate::libs::storage::{ List, Lists, Storage};
-use crate::libs::utils::{  get_input };
+use crate::libs::utils::{ get_value, bar };
 use rustyline::{Result as ResultRL};
 
 impl Lists {
@@ -29,17 +29,17 @@ impl Lists {
 	println!("{}", self.to_str());
     }
 
-    pub fn add(&mut self) -> ResultRL<()> {
-	println!("---------------------------------------");
-	let buffer = get_input("enter list: ", "")?;
-	let id = self.next_id;
-	self.next_id += 1;
-	if buffer.trim().to_string() == "" {
+    pub fn add(&mut self, _id: &str) -> ResultRL<()> {    
+	bar();
+	let __id = get_value("enter id: ", "", _id)?;
+	if __id == "" {
             println!("cancel");
 	} else {
+	    let id = self.next_id;
+	    self.next_id += 1;	    
             self.lists.push(List {
 		id: id,
-		name: buffer.trim().to_string(),
+		name: __id.trim().to_string(),
             });
             let _ = self.save()?;
             println!("added {}", self.lists[self.lists.len() - 1].name);
@@ -47,14 +47,14 @@ impl Lists {
 	}
 	Ok(())
     }
-    
-    pub fn del(&mut self) -> ResultRL<()> {
-	println!("---------------------------------------");
-	let buffer = get_input("enter id: ", "")?;
-	if buffer.trim().to_string() == "" {
+
+    pub fn del(&mut self, _id: &str) -> ResultRL<()> {    
+	bar();
+	let __id = get_value("enter id: ", "", _id)?;
+	if __id == "" {	
             println!("cancel");
 	} else {
-            let id = buffer
+            let id = __id
 		.trim()
 		.parse::<u32>()
 		.map_err(|e| Error::new(ErrorKind::InvalidData, e.to_string()))?;

@@ -4,20 +4,20 @@ use std::io::{Result, BufRead, BufReader, ErrorKind, Error};
 use std::path::Path;
 use chrono::prelude::*;
 use crate::libs::storage::{ Task, Todos, Storage };
-use crate::libs::utils::{ to_str, get_input };
+use crate::libs::utils::{ bar, to_str, get_value, get_values };
 use rustyline::{Result as ResultRL};
 
 impl Todos {
     pub fn new(pth: String) -> Result<Todos> {
 	Todos::load(pth)
     }
-    pub fn del(&mut self) -> ResultRL<()> {
-	println!("---------------------------------------");
-	let buffer = get_input("enter id: ", "")?;
-	if buffer.trim().to_string() == "" {
+    pub fn del(&mut self, _id: &str) -> ResultRL<()> {
+	bar();
+	let __id = get_value("enter id: ", "", _id)?;
+	if __id == "" {
             println!("cancel");
 	} else {
-            let id = buffer
+            let id = __id
 		.trim()
 		.parse::<u32>()
 		.map_err(|e| Error::new(ErrorKind::InvalidData, e.to_string()))?;
@@ -38,22 +38,22 @@ impl Todos {
     }
     
     pub fn help(&self) {
-	println!("---------------------------------------");
+	bar();
 	println!("[todos-commands] show | add | del | complete | reorder | list | trash");
 	println!("[lists-commands] list-show | list-add | list-del");
 	println!("[other-commands] help | exit");
     }
 
-    pub fn add(&mut self) -> ResultRL<()> {
-	println!("---------------------------------------");
-	let buffer = get_input("enter task: ", "")?;
-	if buffer.trim().to_string() == "" {
+    pub fn add(&mut self, _id: &str) -> ResultRL<()> {
+	bar();
+	let __id = get_value("enter id: ", "", _id)?;
+	if __id == "" {
             println!("cancel");
 	} else {
 	    let id = self.next_id;
 	    self.next_id += 1;
 	    let mut tags : Vec<String> = vec![];
-	    let parts: Vec<&str> = buffer.trim().split(",").collect();
+	    let parts: Vec<&str> = __id.trim().split(",").collect();
 	    if parts.len() > 1 {
 		tags.push(parts[1].to_string());
 	    }
@@ -71,13 +71,13 @@ impl Todos {
 	Ok(())
     }
     
-    pub fn complete(&mut self) -> ResultRL<()> {
-	println!("---------------------------------------");
-	let buffer = get_input("enter id: ", "")?;
-	if buffer.trim().to_string() == "" {
+    pub fn complete(&mut self, _id: &str) -> ResultRL<()> {
+	bar();
+	let __id = get_value("enter id: ", "", _id)?;
+	if __id == "" {
             println!("cancel");
 	} else {
-            let id = buffer
+            let id = __id
 		.trim()
 		.parse::<u32>()
 		.map_err(|e| Error::new(ErrorKind::InvalidData, e.to_string()))?;
@@ -99,17 +99,16 @@ impl Todos {
 	Ok(())
     }
 
-    pub fn list(&mut self) -> ResultRL<()> {
-	println!("---------------------------------------");
-	let buffer = get_input("enter id list: ", "")?;
-	if buffer.trim().to_string() == "" {
+    pub fn list(&mut self, _id: &str, _id2: &str) -> ResultRL<()> {
+	bar();
+	let (__id, __id2) = get_values("enter id list: ", "enter list: ", "", _id, _id2)?;
+	if __id == "" || __id2 == "" {
             println!("cancel");
 	} else {
-	    let parts: Vec<&str> = buffer.trim().split_whitespace().collect();
-            let id = parts[0]
+            let id = __id
 		.parse::<u32>()
 		.map_err(|e| Error::new(ErrorKind::InvalidData, e.to_string()))?;
-            let tag = parts[1].trim();
+            let tag = __id2.trim();
             for task in self.todos.iter_mut() {
 		if task.id == id {
 		    task.lists.push(tag.to_string());
@@ -123,17 +122,16 @@ impl Todos {
 	Ok(())
     }
 
-    pub fn unlist(&mut self) -> ResultRL<()> {
-	println!("---------------------------------------");
-	let buffer = get_input("enter id list: ", "")?;
-	if buffer.trim().to_string() == "" {
+    pub fn unlist(&mut self, _id: &str, _id2: &str) -> ResultRL<()> {
+	bar();
+	let (__id, __id2) = get_values("enter id list: ", "enter list: ", "", _id, _id2)?;
+	if __id == "" || __id2 == ""{
             println!("cancel");
 	} else {
-	    let parts: Vec<&str> = buffer.trim().split_whitespace().collect();
-            let id = parts[0]
+            let id = __id
 		.parse::<u32>()
 		.map_err(|e| Error::new(ErrorKind::InvalidData, e.to_string()))?;
-            let tag = parts[1].trim();
+            let tag = __id2.trim();
             for task in self.todos.iter_mut() {
 		if task.id == id {
 		    let mut exists = false;
@@ -156,14 +154,13 @@ impl Todos {
 	Ok(())
     }
     
-    pub fn reorder(&mut self) -> ResultRL<()> {
-	println!("---------------------------------------");
-	let buffer = get_input("enter id index: ", "")?;
-	if buffer.trim().to_string() == "" {
+    pub fn reorder(&mut self, _id: &str, _id2: &str) -> ResultRL<()> {
+	bar();
+	let (__id, __id2) = get_values("enter id index: ", "enter index: ", "", _id, _id2)?;
+	if __id == "" {	
             println!("cancel");
 	} else {
-	    let parts: Vec<&str> = buffer.trim().split_whitespace().collect();
-            let id = parts[0]
+            let id = __id
 		.parse::<u32>()
 		.map_err(|e| Error::new(ErrorKind::InvalidData, e.to_string()))?;
 	    let mut index: usize = 0;
@@ -175,8 +172,8 @@ impl Todos {
 		}
             }
 	    let mut dest = 0;
-	    if parts.len() > 1 {
-		dest = parts[1]
+	    if __id2 == "" {
+		dest = _id2
 		    .parse::<usize>()
 		    .map_err(|e| Error::new(ErrorKind::InvalidData, e.to_string()))?;
 	    }
