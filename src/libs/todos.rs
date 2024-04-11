@@ -41,7 +41,7 @@ impl Todos {
     
     pub fn help(&self) {
 	println!("---------------------------------------");
-	println!("[todos-commands] show | add | del | complete | reorder | trash");
+	println!("[todos-commands] show | add | del | complete | reorder | list | trash");
 	println!("[lists-commands] list-show | list-add | list-del");
 	println!("[other-commands] help | exit");
     }
@@ -274,7 +274,7 @@ impl Storage<Todos> for Todos {
 	    }
 	    let mut lists : Vec<String> = vec![];
 	    if parts.len() > 4  && parts[4] != "" {
-		let mut _lists: Vec<&str> = parts[4].split(",").collect();
+		let mut _lists: Vec<&str> = parts[4].split("|").collect();
 		_lists.retain(|v| *v != "");
 		for l in _lists.iter(){
 		    lists.push(l.to_string());
