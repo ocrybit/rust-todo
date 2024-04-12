@@ -185,7 +185,7 @@ impl Todos {
 		}
             }
 	    let mut dest = 0;
-	    if __id2 == "" {
+	    if __id2 != "" {
 		dest = _id2
 		    .parse::<usize>()
 		    .map_err(|e| Error::new(ErrorKind::InvalidData, e.to_string()))?;
