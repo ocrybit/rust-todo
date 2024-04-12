@@ -13,7 +13,7 @@ pub fn get_values<'a>(msg: &'a str, msg2: &'a str, empty: &'a str, _id: &'a str,
 	buffer = get_input(msg, empty)?;
 	let parts: Vec<&str> = buffer.trim().split(",").collect();
 	__id = parts[0].trim();
-	__id2 = parts[1].trim();
+	__id2 = if parts.len() < 2 { "" } else {parts[1].trim()};
     } else if _id2 == "" {
 	__id = _id;
 	buffer = get_input(msg2, empty)?;
@@ -76,9 +76,9 @@ pub fn to_str(mut todos: Vec<Task>, tag: &str) -> String {
 		 .map(|task| {
 		     let ts = task.done_at / 1000;
 		     let datetime: DateTime<Utc> = Utc.timestamp_opt(ts, 0).unwrap();
-		     let ts2 = datetime.format("%m/%d %H:%M").to_string();
+		     let ts2 = datetime.format("%m/%d").to_string();
 		     format!(
-			 "[ {:0>3} ] {:<30} {}",
+			 "[ {:0>3} ] {:<30} < {} >",
 			 task.id,
 			 task.name,
 			 ts2

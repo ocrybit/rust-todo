@@ -11,6 +11,7 @@ impl Todos {
     pub fn new(pth: String) -> Result<Todos> {
 	Todos::load(pth)
     }
+    
     pub fn del(&mut self, _id: &str) -> ResultRL<()> {
 	bar();
 	let __id = get_value("enter id: ", "", _id)?;
@@ -28,6 +29,7 @@ impl Todos {
 	}
 	Ok(())
     }
+    
     fn to_str(&self, tag: &str) -> String {
 	to_str(self.todos.clone(), tag)
     }
@@ -35,6 +37,17 @@ impl Todos {
     pub fn show(&self, tag: &str) {
 	bar2("tasks");
 	println!("{}", self.to_str(tag));
+    }
+    
+    pub fn count(&self, tag: &str) -> String {
+	let mut todos = self.todos.clone();
+	if tag == "_" || tag == "" {
+	    todos.retain(|v| v.lists.len() == 0 || v.lists.contains(&("_".to_string())));
+	} else if tag != "" {
+	    todos.retain(|v| v.lists.contains(&tag.to_string()));
+	}
+	let (dones, undones): (Vec<Task>, Vec<Task>) = todos.into_iter().partition(|v| v.done);
+	format!("{} : {}", dones.len(), undones.len())
     }
     
     pub fn help(&self) {
@@ -66,7 +79,7 @@ impl Todos {
             });
             let _ = self.save()?;
             println!("added {}", self.todos[self.todos.len() - 1].name);
-	    self.show(if __id2 != "" { tags[1].as_str() } else { "" });
+	    self.show(if __id2 != "" { tags[0].as_str() } else { "" });
 	}
 	Ok(())
     }

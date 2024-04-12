@@ -10,23 +10,23 @@ fn exec(todos: &mut Todos, cmd: &str, prev: &mut String, lists: &mut Lists) -> R
     }
     match parts[0] {
         "list-show" | "ls" => {
-            lists.show();
+            lists.show(todos);
             return command(todos, prev, lists);
         }
         "list-add" | "la" => {
 	    if parts.len() == 1 {
-		let _ = lists.add("");
+		let _ = lists.add("", todos);
 	    }else{
-		let _ = lists.add(parts[1]);
+		let _ = lists.add(parts[1], todos);
 	    }
 	    
             return command(todos, prev, lists);
         }
         "list-del" | "ld" => {
 	    if parts.len() == 1 {
-		let _ = lists.del("");
+		let _ = lists.del("", todos);
 	    }else{
-		let _ = lists.del(parts[1]);
+		let _ = lists.del(parts[1], todos);
 	    }
 	    
             return command(todos, prev, lists);
@@ -131,7 +131,7 @@ fn main() -> Result<()> {
     let mut todos = Todos::new(".todos/todos.txt".to_string())?;
     let mut lists = Lists::new(".todos/lists.txt".to_string())?;
     let mut prev = "s".to_string();
-    lists.show();
+    lists.show(&todos);
     todos.show("");
     command(&mut todos, &mut prev, &mut lists)
 }

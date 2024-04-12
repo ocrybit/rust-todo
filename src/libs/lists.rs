@@ -2,7 +2,7 @@ use std::fs::{File};
 use std::io::prelude::*;
 use std::io::{Result, ErrorKind, Error};
 use std::path::Path;
-use crate::libs::storage::{ List, Lists, Storage};
+use crate::libs::storage::{ List, Lists, Storage, Todos };
 use crate::libs::utils::{ get_value, bar, bar2 };
 use rustyline::{Result as ResultRL};
 
@@ -10,26 +10,29 @@ impl Lists {
     pub fn new(pth: String) -> Result<Lists> {
 	Lists::load(pth)
     }
-    fn to_str(&self) -> String {
-	let str: String = self.lists
+    fn to_str(&self, todos: &Todos) -> String {
+	let mut str: String = self.lists
             .iter()
             .map(|list| {
 		format!(
-                    "[ {:0>3} ] {:<30}",
+                    "[ {:0>3} ] {:<30} < {} >",
                     list.id,
-                    list.name
+                    list.name,
+		    todos.count(&list.name)
 		)
             })
             .collect::<Vec<String>>()
             .join("\n");
+	str += &format!("\n[ {:0>3} ] {:<30} < {} >", "0", "_", todos.count("") );
 	str
     }
-    pub fn show(&self) {
+    
+    pub fn show(&self, todos: &Todos) {
 	bar2("lists");
-	println!("{}", self.to_str());
+	println!("{}", self.to_str(todos));
     }
 
-    pub fn add(&mut self, _id: &str) -> ResultRL<()> {    
+    pub fn add(&mut self, _id: &str, todos: &Todos) -> ResultRL<()> {    
 	bar();
 	let __id = get_value("enter id: ", "", _id)?;
 	if __id == "" {
@@ -43,12 +46,12 @@ impl Lists {
             });
             let _ = self.save()?;
             println!("added {}", self.lists[self.lists.len() - 1].name);
-	    self.show();
+	    self.show(todos);
 	}
 	Ok(())
     }
 
-    pub fn del(&mut self, _id: &str) -> ResultRL<()> {    
+    pub fn del(&mut self, _id: &str, todos: &Todos) -> ResultRL<()> {    
 	bar();
 	let __id = get_value("enter id: ", "", _id)?;
 	if __id == "" {	
@@ -61,7 +64,7 @@ impl Lists {
             self.lists.retain(|v| v.id != id);
             let _ = self.save()?;
             println!("{} deleted", id);
-	    self.show();
+	    self.show(todos);
 	}
 	Ok(())
     }

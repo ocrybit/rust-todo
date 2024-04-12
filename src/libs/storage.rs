@@ -6,7 +6,7 @@ pub trait Storage<T> {
     fn load(pth: String) -> Result<T>;
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Task {
     pub id: u32,
     pub name: String,
@@ -15,6 +15,7 @@ pub struct Task {
     pub lists: Vec<String>
 }
 
+#[derive(Serialize, Deserialize)]
 pub struct Todos {
     pub todos: Vec<Task>,
     pub path: String,
