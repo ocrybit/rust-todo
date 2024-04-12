@@ -34,7 +34,11 @@ pub fn get_value(msg: &str, empty: &str, _id: &str) -> Result<String> {
 }
 
 pub fn bar() {
-    println!("---------------------------------------");
+    println!("--------------------------------------------");
+}
+
+pub fn bar2(name: &str) {
+    println!("\n({}) ==============================", name);
 }
 
 pub fn create_dir() -> Result<()> {
@@ -54,9 +58,9 @@ pub fn to_str(mut todos: Vec<Task>, tag: &str) -> String {
         .iter()
         .map(|task| {
 	    let mut lists = task.lists.iter().map(|l| format!("{}", l)).collect::<Vec<String>>().join("|");
-	    lists = format!("<{}>",lists);
+	    lists = format!("< {} >",lists);
 	    format!(
-                "[{}] {} {}",
+                "[ {:0>3} ] {:<30} {}",
                 task.id,
                 task.name,
 		if task.lists.len() == 0 || (task.lists.len() == 1 && task.lists[0] == "") { "".to_string() } else { lists }
@@ -65,7 +69,7 @@ pub fn to_str(mut todos: Vec<Task>, tag: &str) -> String {
         .collect::<Vec<String>>()
         .join("\n");
     if dones.len() > 0 {
-        str += "\n==================================[done]\n";
+        str += "\n-------------------------------------- [ done ]\n";
 	dones.sort_by_key(|v| v.done_at);
         str += &(dones
 		 .iter()
@@ -74,7 +78,7 @@ pub fn to_str(mut todos: Vec<Task>, tag: &str) -> String {
 		     let datetime: DateTime<Utc> = Utc.timestamp_opt(ts, 0).unwrap();
 		     let ts2 = datetime.format("%m/%d %H:%M").to_string();
 		     format!(
-			 "[{}] {} ({})",
+			 "[ {:0>3} ] {:<30} {}",
 			 task.id,
 			 task.name,
 			 ts2

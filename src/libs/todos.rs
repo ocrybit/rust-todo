@@ -4,7 +4,7 @@ use std::io::{Result, BufRead, BufReader, ErrorKind, Error};
 use std::path::Path;
 use chrono::prelude::*;
 use crate::libs::storage::{ Task, Todos, Storage };
-use crate::libs::utils::{ bar, to_str, get_value, get_values };
+use crate::libs::utils::{ bar2, bar, to_str, get_value, get_values };
 use rustyline::{Result as ResultRL};
 
 impl Todos {
@@ -33,7 +33,7 @@ impl Todos {
     }
 
     pub fn show(&self, tag: &str) {
-	println!("[tasks]---------------------------------------");
+	bar2("tasks");
 	println!("{}", self.to_str(tag));
     }
     

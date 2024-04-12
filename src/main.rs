@@ -121,8 +121,7 @@ fn exec(todos: &mut Todos, cmd: &str, prev: &mut String, lists: &mut Lists) -> R
 }
 
 fn command(todos: &mut Todos, prev: &mut String, lists: &mut Lists) -> Result<()> {
-    println!("---------------------------------------");
-    let str = utils::get_input("enter command: ", "exit")?;
+    let str = utils::get_input("\nenter command: ", "exit")?;
     let cmd = str.trim();
     exec(todos, &cmd, prev, lists)
 }

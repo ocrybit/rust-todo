@@ -3,7 +3,7 @@ use std::io::prelude::*;
 use std::io::{Result, ErrorKind, Error};
 use std::path::Path;
 use crate::libs::storage::{ List, Lists, Storage};
-use crate::libs::utils::{ get_value, bar };
+use crate::libs::utils::{ get_value, bar, bar2 };
 use rustyline::{Result as ResultRL};
 
 impl Lists {
@@ -15,7 +15,7 @@ impl Lists {
             .iter()
             .map(|list| {
 		format!(
-                    "[{}] {}",
+                    "[ {:0>3} ] {:<30}",
                     list.id,
                     list.name
 		)
@@ -25,7 +25,7 @@ impl Lists {
 	str
     }
     pub fn show(&self) {
-	println!("[lists]---------------------------------------");
+	bar2("lists");
 	println!("{}", self.to_str());
     }
 
