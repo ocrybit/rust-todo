@@ -118,6 +118,7 @@ impl Todos {
 		.trim()
 		.parse::<u32>()
 		.map_err(|e| Error::new(ErrorKind::InvalidData, e.to_string()))?;
+	    let mut tag = "".to_string();
             for task in self.todos.iter_mut() {
 		if task.id == id {
                     task.done = !task.done;
@@ -126,12 +127,15 @@ impl Todos {
 		    }else{
 			task.done_at = Utc::now().timestamp_millis();
 		    }
+		    if task.lists.len() > 0 {
+			tag = task.lists[0].clone();
+		    }
                     break;
 		}
             }
             let _ = self.save()?;
             println!("{} completed", id);
-	    self.show("");
+	    self.show(tag.as_str());
 	}
 	Ok(())
     }

@@ -83,7 +83,12 @@ pub fn to_str(mut todos: Vec<Task>, tag: &str) -> String {
 	todos.retain(|v| v.lists.len() == 0 || v.lists.contains(&("_".to_string())));
     } else if tag != "" {
 	todos.retain(|v| v.lists.contains(&tag.to_string()));
+    } else {
+	todos.retain(|todo| {
+	    !todo.lists.iter().any(|list_item| list_item.starts_with("#"))
+	});
     }
+    
     let (mut dones, undones): (Vec<Task>, Vec<Task>) = todos.into_iter().partition(|v| v.done);
     let mut i = 0;
     let mut str: String = undones
