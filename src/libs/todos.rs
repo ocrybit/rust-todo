@@ -59,7 +59,7 @@ impl Todos {
 
     pub fn add(&mut self, _id: &str, _id2: &str) -> ResultRL<()> {
 	bar();
-	let (__id, __id2) = get_values("enter id tags: ", "enter tags: ", "", _id, _id2)?;
+	let (__id, __id2) = get_values("enter task tags: ", "enter tags: ", "", _id, _id2)?;
 	if __id == "" {
             println!("cancel");
 	} else {
@@ -80,6 +80,30 @@ impl Todos {
             let _ = self.save()?;
             println!("added {}", self.todos[self.todos.len() - 1].name);
 	    self.show(if __id2 != "" { tags[0].as_str() } else { "" });
+	}
+	Ok(())
+    }
+
+    pub fn edit(&mut self, _id: &str, _id2: &str) -> ResultRL<()> {
+	bar();
+	let (__id, __id2) = get_values("enter id task: ", "enter task: ", "", _id, _id2)?;
+	if __id == "" || __id2 == "" {
+            println!("cancel");
+	} else {
+	    let id = __id
+		.trim()
+		.parse::<u32>()
+		.map_err(|e| Error::new(ErrorKind::InvalidData, e.to_string()))?;
+	    let name = __id2.trim().to_string();
+	    self.todos.iter().position(|x| x.id == id).map_or_else(
+		|| println!("not found"),
+		| ind | {
+		    println!("edited {}: {}", id, name);		    
+		    self.todos[ind].name = name.clone()
+		}
+	    );
+            let _ = self.save()?;
+	    self.show("");
 	}
 	Ok(())
     }

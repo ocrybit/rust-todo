@@ -75,6 +75,17 @@ fn exec(todos: &mut Todos, cmd: &str, prev: &mut String, lists: &mut Lists) -> R
 	    
             return command(todos, prev, lists);
         }
+        "edit" | "e" => {
+	    if parts.len() == 1 {
+		let _ = todos.edit("", "");
+	    }else if parts.len() == 2 {
+		let _ = todos.edit(parts[1], "");
+	    } else {
+		let _ = todos.edit(parts[1], parts[2]);
+	    }
+	    
+            return command(todos, prev, lists);
+        }
         "complete" | "c" => {
 	    if parts.len() == 1 {
 		let _ = todos.complete("");
@@ -105,7 +116,7 @@ fn exec(todos: &mut Todos, cmd: &str, prev: &mut String, lists: &mut Lists) -> R
 	    }
             return command(todos, prev, lists);
         }
-        "exit" | "e" => {
+        "quit" | "q" => {
             println!("bye!");
         }
         "" => {
@@ -121,7 +132,7 @@ fn exec(todos: &mut Todos, cmd: &str, prev: &mut String, lists: &mut Lists) -> R
 }
 
 fn command(todos: &mut Todos, prev: &mut String, lists: &mut Lists) -> Result<()> {
-    let str = utils::get_input("\nenter command: ", "exit")?;
+    let str = utils::get_input("\nenter command: ", "quit")?;
     let cmd = str.trim();
     exec(todos, &cmd, prev, lists)
 }
