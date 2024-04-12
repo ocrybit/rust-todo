@@ -224,7 +224,6 @@ impl Todos {
 		    .parse::<usize>()
 		    .map_err(|e| Error::new(ErrorKind::InvalidData, e.to_string()))?;
 	    }
-	    println!("{}", dest);
 	    let mut done_count = 0usize;
 	    let mut undone_count = 0usize;
 	    let mut dest2 = if let Some(last) = _todos.last() { last.id } else { 0 } ;
@@ -247,17 +246,17 @@ impl Todos {
 		    undone_count += 1;
 		}
             }
-	    let mut dest3 = if let Some(d) = self.todos.iter().position(|x| x.id == dest2) { d } else { 0 };
+	    let mut dest3 = self.todos.len();
 	    done_count = 0;
 	    undone_count = 0;
 	    for (ind, task) in self.todos.iter().enumerate() {
 		if is_done == true {
-		    if task.done == true && done_count == dest3 {
+		    if task.done == true && task.id == dest2 {
 			dest3 = ind;
 			break;
 		    }
 		}else{
-		    if task.done == false && undone_count == dest3 {
+		    if task.done == false && task.id == dest2 {
 			dest3 = ind;
 			break;
 		    }
