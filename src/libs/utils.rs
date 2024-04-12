@@ -25,6 +25,37 @@ pub fn get_values<'a>(msg: &'a str, msg2: &'a str, empty: &'a str, _id: &'a str,
     Ok((__id.to_string(), __id2.to_string()))
 }
 
+pub fn get_values3<'a>(msg: &'a str, msg2: &'a str, msg3: &'a str, empty: &'a str, _id: &'a str, _id2: &'a str, _id3: &'a str) -> Result<(String, String, String)> {
+    let mut __id = "";
+    let mut __id2 = "";
+    let mut __id3 = "";
+    
+    let buffer: String;
+    if _id == "" && _id2 == "" && _id3 == "" {
+	buffer = get_input(msg, empty)?;	
+	let parts: Vec<&str> = buffer.trim().split(",").collect();
+	__id = parts[0].trim();
+	__id2 = if parts.len() < 2 { "" } else {parts[1].trim()};
+	__id3 = if parts.len() < 3 { "" } else {parts[2].trim()};
+    }else if _id2 == "" && _id3 == "" {
+	__id = _id;
+	buffer = get_input(msg2, empty)?;
+	let parts: Vec<&str> = buffer.trim().split(",").collect();
+	__id2 = parts[0].trim();
+	__id3 = if parts.len() < 2 { "" } else {parts[1].trim()};
+    } else if _id3 == "" {
+	__id = _id;
+	__id2 = _id2;
+	buffer = get_input(msg3, empty)?;
+	__id3 = buffer.trim();
+    }else{
+	__id = _id;
+	__id2 = _id2;
+	__id3 = _id3;
+    }
+    Ok((__id.to_string(), __id2.to_string(), __id3.to_string()))
+}
+
 pub fn get_value(msg: &str, empty: &str, _id: &str) -> Result<String> {
     if _id == "" {
 	Ok(get_input(msg, empty)?.trim().to_string())
@@ -38,7 +69,7 @@ pub fn bar() {
 }
 
 pub fn bar2(name: &str) {
-    println!("\n({}) ==============================", name);
+    println!("\n({}) ===================================", name);
 }
 
 pub fn create_dir() -> Result<()> {
@@ -54,13 +85,16 @@ pub fn to_str(mut todos: Vec<Task>, tag: &str) -> String {
 	todos.retain(|v| v.lists.contains(&tag.to_string()));
     }
     let (mut dones, undones): (Vec<Task>, Vec<Task>) = todos.into_iter().partition(|v| v.done);
+    let mut i = 0;
     let mut str: String = undones
         .iter()
         .map(|task| {
+	    i += 1;
 	    let mut lists = task.lists.iter().map(|l| format!("{}", l)).collect::<Vec<String>>().join("|");
 	    lists = format!("< {} >",lists);
 	    format!(
-                "[ {:0>3} ] {:<30} {}",
+                "[ {:0>2} # {:0>3} ] {:<30} {}",
+		i - 1,
                 task.id,
                 task.name,
 		if task.lists.len() == 0 || (task.lists.len() == 1 && task.lists[0] == "") { "".to_string() } else { lists }
@@ -78,7 +112,8 @@ pub fn to_str(mut todos: Vec<Task>, tag: &str) -> String {
 		     let datetime: DateTime<Utc> = Utc.timestamp_opt(ts, 0).unwrap();
 		     let ts2 = datetime.format("%m/%d").to_string();
 		     format!(
-			 "[ {:0>3} ] {:<30} < {} >",
+			 "[ {:0>2} # {:0>3} ] {:<30} {}",
+			 i,
 			 task.id,
 			 task.name,
 			 ts2

@@ -96,11 +96,13 @@ fn exec(todos: &mut Todos, cmd: &str, prev: &mut String, lists: &mut Lists) -> R
         }
         "reorder" | "r" => {	
 	    if parts.len() == 1 {
-		let _ = todos.reorder("", "");
+		let _ = todos.reorder("", "", "");
 	    }else if parts.len() == 2 {
-		let _ = todos.reorder(parts[1], "");
+		let _ = todos.reorder(parts[1], "", "");
+	    } else if parts.len() == 3 {
+		let _ = todos.reorder(parts[1], parts[2], "");
 	    } else {
-		let _ = todos.reorder(parts[1], parts[2]);
+		let _ = todos.reorder(parts[1], parts[2], parts[3]);
 	    }    
             return command(todos, prev, lists);
         }

@@ -4,7 +4,7 @@ use std::io::{Result, BufRead, BufReader, ErrorKind, Error};
 use std::path::Path;
 use chrono::prelude::*;
 use crate::libs::storage::{ Task, Todos, Storage };
-use crate::libs::utils::{ bar2, bar, to_str, get_value, get_values };
+use crate::libs::utils::{ bar2, bar, to_str, get_value, get_values, get_values3 };
 use rustyline::{Result as ResultRL};
 
 impl Todos {
@@ -59,7 +59,7 @@ impl Todos {
 
     pub fn add(&mut self, _id: &str, _id2: &str) -> ResultRL<()> {
 	bar();
-	let (__id, __id2) = get_values("enter task tags: ", "enter tags: ", "", _id, _id2)?;
+	let (__id, __id2) = get_values("enter task, tags: ", "enter tags: ", "", _id, _id2)?;
 	if __id == "" {
             println!("cancel");
 	} else {
@@ -86,7 +86,7 @@ impl Todos {
 
     pub fn edit(&mut self, _id: &str, _id2: &str) -> ResultRL<()> {
 	bar();
-	let (__id, __id2) = get_values("enter id task: ", "enter task: ", "", _id, _id2)?;
+	let (__id, __id2) = get_values("enter id, task: ", "enter task: ", "", _id, _id2)?;
 	if __id == "" || __id2 == "" {
             println!("cancel");
 	} else {
@@ -138,7 +138,7 @@ impl Todos {
 
     pub fn list(&mut self, _id: &str, _id2: &str) -> ResultRL<()> {
 	bar();
-	let (__id, __id2) = get_values("enter id list: ", "enter list: ", "", _id, _id2)?;
+	let (__id, __id2) = get_values("enter id, list: ", "enter list: ", "", _id, _id2)?;
 	if __id == "" || __id2 == "" {
             println!("cancel");
 	} else {
@@ -161,7 +161,7 @@ impl Todos {
 
     pub fn unlist(&mut self, _id: &str, _id2: &str) -> ResultRL<()> {
 	bar();
-	let (__id, __id2) = get_values("enter id list: ", "enter list: ", "", _id, _id2)?;
+	let (__id, __id2) = get_values("enter id, list: ", "enter list: ", "", _id, _id2)?;
 	if __id == "" || __id2 == ""{
             println!("cancel");
 	} else {
@@ -191,12 +191,18 @@ impl Todos {
 	Ok(())
     }
     
-    pub fn reorder(&mut self, _id: &str, _id2: &str) -> ResultRL<()> {
+    pub fn reorder(&mut self, _id: &str, _id2: &str, _id3: &str) -> ResultRL<()> {
 	bar();
-	let (__id, __id2) = get_values("enter id index: ", "enter index: ", "", _id, _id2)?;
+	let (__id, __id2, __id3) = get_values3("enter id, index, tag", "enter index, tag: ", "enter tag: ", "", _id, _id2, _id3)?;
 	if __id == "" {	
             println!("cancel");
 	} else {
+	    let tag = __id3.trim().to_string();
+	    let mut _todos : Vec<Task> = self.todos.clone();
+	    if __id3 != "" {
+		_todos.retain(|v| v.lists.contains(&tag.to_string()));
+	    }
+	    
             let id = __id
 		.parse::<u32>()
 		.map_err(|e| Error::new(ErrorKind::InvalidData, e.to_string()))?;
@@ -214,17 +220,41 @@ impl Todos {
 		    .parse::<usize>()
 		    .map_err(|e| Error::new(ErrorKind::InvalidData, e.to_string()))?;
 	    }
+	    println!("{}", dest);
 	    let mut done_count = 0usize;
 	    let mut undone_count = 0usize;
-	    for (ind, task) in self.todos.iter().enumerate() {
+	    let mut dest2 = if let Some(last) = _todos.last() { last.id } else { 0 } ;
+	    for (_, task) in _todos.iter().enumerate() {
 		if is_done == true {
 		    if task.done == true && done_count == dest {
-			dest = ind;
+			dest2 = task.id;
 			break;
 		    }
 		}else{
+		    
 		    if task.done == false && undone_count == dest {
-			dest = ind;
+			dest2 = task.id;
+			break;
+		    }
+		}
+		if task.done == true {
+		    done_count += 1;
+		} else {
+		    undone_count += 1;
+		}
+            }
+	    let mut dest3 = if let Some(d) = self.todos.iter().position(|x| x.id == dest2) { d } else { 0 };
+	    done_count = 0;
+	    undone_count = 0;
+	    for (ind, task) in self.todos.iter().enumerate() {
+		if is_done == true {
+		    if task.done == true && done_count == dest3 {
+			dest3 = ind;
+			break;
+		    }
+		}else{
+		    if task.done == false && undone_count == dest3 {
+			dest3 = ind;
 			break;
 		    }
 		}
@@ -235,10 +265,10 @@ impl Todos {
 		}
             }
             let task = self.todos.remove(index);
-	    self.todos.insert(dest, task);
+	    self.todos.insert(dest3, task);
             let _ = self.save()?;
-            println!("{} -> {} reorderd ", id, dest);
-	    self.show("");
+            println!("{} -> {} : {} reorderd ", id, dest, dest3);
+	    self.show(_id3);
 	}
 	Ok(())
     }

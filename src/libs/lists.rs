@@ -11,11 +11,14 @@ impl Lists {
 	Lists::load(pth)
     }
     fn to_str(&self, todos: &Todos) -> String {
+	let mut i = 0;
 	let mut str: String = self.lists
             .iter()
             .map(|list| {
+		i += 1;
 		format!(
-                    "[ {:0>3} ] {:<30} < {} >",
+                    "[ {:0>2} # {:0>3} ] {:<30} < {} >",
+		    i - 1,
                     list.id,
                     list.name,
 		    todos.count(&list.name)
@@ -23,7 +26,7 @@ impl Lists {
             })
             .collect::<Vec<String>>()
             .join("\n");
-	str += &format!("\n[ {:0>3} ] {:<30} < {} >", "0", "_", todos.count("") );
+	str += &format!("\n[ {:0>2} # {:0>3} ] {:<30} < {} >", i, "0", "_", todos.count("") );
 	str
     }
     
