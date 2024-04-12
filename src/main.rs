@@ -11,7 +11,6 @@ fn exec(todos: &mut Todos, cmd: &str, prev: &mut String, lists: &mut Lists) -> R
     match parts[0] {
         "list-show" | "ls" => {
             lists.show();
-            *prev = cmd.to_string();
             return command(todos, prev, lists);
         }
         "list-add" | "la" => {
@@ -21,7 +20,6 @@ fn exec(todos: &mut Todos, cmd: &str, prev: &mut String, lists: &mut Lists) -> R
 		let _ = lists.add(parts[1]);
 	    }
 	    
-            *prev = cmd.to_string();
             return command(todos, prev, lists);
         }
         "list-del" | "ld" => {
@@ -31,7 +29,6 @@ fn exec(todos: &mut Todos, cmd: &str, prev: &mut String, lists: &mut Lists) -> R
 		let _ = lists.del(parts[1]);
 	    }
 	    
-            *prev = cmd.to_string();
             return command(todos, prev, lists);
         }
         "show" | "s" => {
@@ -40,7 +37,7 @@ fn exec(todos: &mut Todos, cmd: &str, prev: &mut String, lists: &mut Lists) -> R
 	    }else{
 		todos.show(parts[1]);
 	    }
-            *prev = cmd.to_string();
+	    *prev = cmd.to_string();
             return command(todos, prev, lists);
         }
         "list" | "l" => {
@@ -51,7 +48,6 @@ fn exec(todos: &mut Todos, cmd: &str, prev: &mut String, lists: &mut Lists) -> R
 	    } else {
 		let _ = todos.list(parts[1], parts[2]);
 	    }
-            *prev = cmd.to_string();
             return command(todos, prev, lists);
         }
         "unlist" | "u" => {
@@ -62,12 +58,10 @@ fn exec(todos: &mut Todos, cmd: &str, prev: &mut String, lists: &mut Lists) -> R
 	    } else {
 		let _ = todos.unlist(parts[1], parts[2]);
 	    }
-            *prev = cmd.to_string();
             return command(todos, prev, lists);
         }
         "help" | "h" => {
             todos.help();
-            *prev = cmd.to_string();
             return command(todos, prev, lists);
         }
         "add" | "a" => {
@@ -79,7 +73,6 @@ fn exec(todos: &mut Todos, cmd: &str, prev: &mut String, lists: &mut Lists) -> R
 		let _ = todos.add(parts[1], parts[2]);
 	    }
 	    
-            *prev = cmd.to_string();
             return command(todos, prev, lists);
         }
         "complete" | "c" => {
@@ -88,7 +81,6 @@ fn exec(todos: &mut Todos, cmd: &str, prev: &mut String, lists: &mut Lists) -> R
 	    }else{
 		let _ = todos.complete(parts[1]);
 	    }
-            *prev = cmd.to_string();
             return command(todos, prev, lists);
         }
         "reorder" | "r" => {	
@@ -99,12 +91,10 @@ fn exec(todos: &mut Todos, cmd: &str, prev: &mut String, lists: &mut Lists) -> R
 	    } else {
 		let _ = todos.reorder(parts[1], parts[2]);
 	    }    
-            *prev = cmd.to_string();
             return command(todos, prev, lists);
         }
         "trash" | "t" => {
             let _ = todos.trash();
-            *prev = cmd.to_string();
             return command(todos, prev, lists);
         }
         "del" | "d" => {
@@ -113,7 +103,6 @@ fn exec(todos: &mut Todos, cmd: &str, prev: &mut String, lists: &mut Lists) -> R
 	    }else{
 		let _ = todos.del(parts[1]);
 	    }
-            *prev = cmd.to_string();
             return command(todos, prev, lists);
         }
         "exit" | "e" => {
@@ -123,7 +112,8 @@ fn exec(todos: &mut Todos, cmd: &str, prev: &mut String, lists: &mut Lists) -> R
             return exec(todos, &prev.clone(), prev, lists);
         }
         _ => {
-            println!("command not found...{}, {}", cmd, prev);
+	    todos.show(parts[0]);
+            *prev = cmd.to_string();
             return command(todos, prev, lists);
         }
     }
@@ -141,7 +131,7 @@ fn main() -> Result<()> {
     utils::create_dir()?;
     let mut todos = Todos::new(".todos/todos.txt".to_string())?;
     let mut lists = Lists::new(".todos/lists.txt".to_string())?;
-    let mut prev = "1".to_string();
+    let mut prev = "s".to_string();
     lists.show();
     todos.show("");
     command(&mut todos, &mut prev, &mut lists)
