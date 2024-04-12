@@ -6,7 +6,7 @@ use rustyline::{Result};
 fn exec(todos: &mut Todos, cmd: &str, prev: &mut String, lists: &mut Lists) -> Result<()> {
     let mut parts: Vec<&str> = vec![""];
     if cmd != "" {
-	parts = cmd.trim().split_whitespace().collect();
+	parts = cmd.trim().split(",").collect();
     }
     match parts[0] {
         "list-show" | "ls" => {
@@ -72,9 +72,11 @@ fn exec(todos: &mut Todos, cmd: &str, prev: &mut String, lists: &mut Lists) -> R
         }
         "add" | "a" => {
 	    if parts.len() == 1 {
-		let _ = todos.add("");
-	    }else{
-		let _ = todos.add(parts[1]);
+		let _ = todos.add("", "");
+	    }else if parts.len() == 2 {
+		let _ = todos.add(parts[1], "");
+	    } else {
+		let _ = todos.add(parts[1], parts[2]);
 	    }
 	    
             *prev = cmd.to_string();

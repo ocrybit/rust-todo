@@ -44,29 +44,29 @@ impl Todos {
 	println!("[other-commands] help | exit");
     }
 
-    pub fn add(&mut self, _id: &str) -> ResultRL<()> {
+    pub fn add(&mut self, _id: &str, _id2: &str) -> ResultRL<()> {
 	bar();
-	let __id = get_value("enter id: ", "", _id)?;
+	let (__id, __id2) = get_values("enter id tags: ", "enter tags: ", "", _id, _id2)?;
 	if __id == "" {
             println!("cancel");
 	} else {
 	    let id = self.next_id;
 	    self.next_id += 1;
-	    let mut tags : Vec<String> = vec![];
-	    let parts: Vec<&str> = __id.trim().split(",").collect();
-	    if parts.len() > 1 {
-		tags.push(parts[1].to_string());
-	    }
+	    let tags: Vec<String> = if __id2 == "" {
+		vec![]
+	    } else {
+		__id2.trim().split("|").map(|s| s.to_string()).collect()
+	    };
             self.todos.push(Task {
 		id: id,
-		name: parts[0].trim().to_string(),
+		name: __id.trim().to_string(),
 		done: false,
 		done_at: 0,
-		lists: tags
+		lists: tags.clone()
             });
             let _ = self.save()?;
             println!("added {}", self.todos[self.todos.len() - 1].name);
-	    self.show(if parts.len() > 1 { parts[1] } else { "" });
+	    self.show(if __id2 != "" { tags[1].as_str() } else { "" });
 	}
 	Ok(())
     }

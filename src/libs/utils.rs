@@ -11,7 +11,7 @@ pub fn get_values<'a>(msg: &'a str, msg2: &'a str, empty: &'a str, _id: &'a str,
     let buffer: String;
     if _id == "" && _id2 == "" {
 	buffer = get_input(msg, empty)?;
-	let parts: Vec<&str> = buffer.trim().split_whitespace().collect();
+	let parts: Vec<&str> = buffer.trim().split(",").collect();
 	__id = parts[0].trim();
 	__id2 = parts[1].trim();
     } else if _id2 == "" {
