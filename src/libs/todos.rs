@@ -18,14 +18,20 @@ impl Todos {
 	if __id == "" {
             println!("cancel");
 	} else {
+	    let mut tag = "".to_string();
             let id = __id
 		.trim()
 		.parse::<u32>()
 		.map_err(|e| Error::new(ErrorKind::InvalidData, e.to_string()))?;
-            self.todos.retain(|v| v.id != id);
+            self.todos.retain(|v| {
+		if v.id == id && v.lists.len() > 0 {
+		    tag = v.lists[0].clone();		    
+		}
+		v.id != id
+	    });
             let _ = self.save()?;
             println!("{} deleted", id);
-	    self.show("");
+	    self.show(tag.as_str());
 	}
 	Ok(())
     }
@@ -90,6 +96,7 @@ impl Todos {
 	if __id == "" || __id2 == "" {
             println!("cancel");
 	} else {
+	    let mut tag = "".to_string();
 	    let id = __id
 		.trim()
 		.parse::<u32>()
@@ -98,12 +105,15 @@ impl Todos {
 	    self.todos.iter().position(|x| x.id == id).map_or_else(
 		|| println!("not found"),
 		| ind | {
-		    println!("edited {}: {}", id, name);		    
+		    println!("edited {}: {}", id, name);
+		    if  self.todos[ind].lists.len() > 0 {
+			tag = self.todos[ind].lists[0].clone();		    
+		    }
 		    self.todos[ind].name = name.clone()
 		}
 	    );
             let _ = self.save()?;
-	    self.show("");
+	    self.show(tag.as_str());
 	}
 	Ok(())
     }
