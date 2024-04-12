@@ -94,7 +94,15 @@ fn exec(todos: &mut Todos, cmd: &str, prev: &mut String, lists: &mut Lists) -> R
 	    }
             return command(todos, prev, lists);
         }
-        "reorder" | "r" => {	
+	"reset" | "r" => {
+	    if parts.len() == 1 {
+		let _ = todos.reset("");
+	    }else{
+		let _ = todos.reset(parts[1]);
+	    }
+            return command(todos, prev, lists);
+        }
+        "move" | "m" => {	
 	    if parts.len() == 1 {
 		let _ = todos.reorder("", "", "");
 	    }else if parts.len() == 2 {

@@ -25,7 +25,8 @@ cargo doc
 - `a | add` : add a task
 - `e | edit` : edit a task
 - `c | complete` : complete a task
-- `r | reorder` : reorder a task
+- `m | move` : move a task
+- `rr` | `reset` : reset recursive tasks
 - `d | del` : delete a task
 - `l | list` : add a task to a list
 - `u | unlist` : remove a task from a list
@@ -34,3 +35,8 @@ cargo doc
 - `ld | list-del` : delete a list
 - `h | help` : show available commands
 - `q | quit` : quit the app
+
+## Special Tag Types
+
+- `#` : non task
+- `@` : recursive

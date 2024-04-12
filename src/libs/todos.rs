@@ -150,6 +150,21 @@ impl Todos {
 	Ok(())
     }
 
+    pub fn reset(&mut self, _id: &str) -> ResultRL<()> {
+	bar();
+	let __id = get_value("enter tag: ", "", _id)?;
+	let tag = __id.trim();
+        for task in self.todos.iter_mut() {
+	    if tag == "" || task.lists.contains(&tag.to_string()){
+		task.done = false;
+	    }
+        }
+        let _ = self.save()?;
+        println!("{} reset", tag);
+	self.show(tag);
+	Ok(())
+    }
+    
     pub fn list(&mut self, _id: &str, _id2: &str) -> ResultRL<()> {
 	bar();
 	let (__id, __id2) = get_values("enter id, list: ", "enter list: ", "", _id, _id2)?;
@@ -287,7 +302,7 @@ impl Todos {
     }
     
     pub fn trash(&mut self) -> Result<()> {
-	self.todos.retain(|v| v.done == false);
+	self.todos.retain(|v| v.done == false || v.lists.iter().any(|list_item| list_item.starts_with("@")));
 	let _ = self.save()?;
 	println!("archive cleared");
 	self.show("");

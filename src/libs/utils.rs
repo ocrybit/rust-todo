@@ -85,7 +85,7 @@ pub fn to_str(mut todos: Vec<Task>, tag: &str) -> String {
 	todos.retain(|v| v.lists.contains(&tag.to_string()));
     } else {
 	todos.retain(|todo| {
-	    !todo.lists.iter().any(|list_item| list_item.starts_with("#"))
+	    !todo.lists.iter().any(|list_item| list_item.starts_with("#") || list_item.starts_with("@"))
 	});
     }
     
