@@ -28,6 +28,7 @@ cargo doc
 - `m | move` : move a task
 - `rr` | `reset` : reset recursive tasks
 - `d | del` : delete a task
+- `t | trash` : trash completed tasks
 - `l | list` : add a task to a list
 - `u | unlist` : remove a task from a list
 - `ls | list-show` : show lists
