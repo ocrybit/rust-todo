@@ -26,7 +26,7 @@ cargo doc
 - `e | edit` : edit a task
 - `c | complete` : complete a task
 - `m | move` : move a task
-- `rr` | `reset` : reset recursive tasks
+- `r` | `reset` : reset recursive tasks
 - `d | del` : delete a task
 - `t | trash` : trash completed tasks
 - `l | list` : add a task to a list
